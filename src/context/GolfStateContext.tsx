@@ -36,7 +36,7 @@ const mockPlayers: Player[] = [
     email: 'mike@example.com',
     handicap: 8,
     gender: 'male',
-    preferredTee: 'yellow', // Changed from 'white' to 'yellow' as per TeeColor type
+    preferredTee: 'yellow',
     createdAt: new Date(),
     updatedAt: new Date()
   }
@@ -78,7 +78,7 @@ const mockScores: Score[] = [
     id: 's1',
     playerId: 'p1',
     gameId: 'g2',
-    holes: [], // Added the required holes property
+    holes: [], 
     totalStrokes: 89,
     totalNetStrokes: 79,
     totalStablefordPoints: 32,
@@ -111,18 +111,34 @@ interface GolfStateContextType {
   players: Player[];
   games: Game[];
   scores: Score[];
-  weather: WeatherData | null;
   photos: PhotoItem[];
+  weather: WeatherData | null;
   isLoading: boolean;
+  error: string | null;
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   setGames: React.Dispatch<React.SetStateAction<Game[]>>;
   setScores: React.Dispatch<React.SetStateAction<Score[]>>;
   setPhotos: React.Dispatch<React.SetStateAction<PhotoItem[]>>;
   refreshData: () => Promise<void>;
+  getNextGame: () => Game | null;
+  getPlayerById: (id: string) => Player | null;
+  getGameById: (id: string) => Game | null;
+  getScoresByGameId: (gameId: string) => Score[];
+  getScoresByPlayerId: (playerId: string) => Score[];
+  getPhotosByGameId: (gameId: string) => PhotoItem[];
+  addPhoto?: (photo: Omit<PhotoItem, 'id' | 'createdAt'>) => Promise<boolean>;
+  addGame?: (game: Omit<Game, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
+  updateGame?: (gameId: string, data: Partial<Game>) => Promise<boolean>;
+  deleteGame?: (gameId: string) => Promise<boolean>;
+  addPlayer?: (player: Omit<Player, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
+  updatePlayer?: (playerId: string, data: Partial<Player>) => Promise<boolean>;
+  deletePlayer?: (playerId: string) => Promise<boolean>;
+  saveScore?: (score: Omit<Score, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
+  verifyScore?: (scoreId: string) => Promise<boolean>;
 }
 
 // Create the context with a default empty value
-const GolfStateContext = createContext<GolfStateContextType | undefined>(undefined);
+export const GolfStateContext = createContext<GolfStateContextType | undefined>(undefined);
 
 // Provider component that wraps the app
 export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -132,10 +148,45 @@ export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Helper functions
+  const getNextGame = () => {
+    if (games.length === 0) return null;
+    
+    const now = new Date();
+    const futureGames = games
+      .filter(game => new Date(game.date) > now)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    return futureGames.length > 0 ? futureGames[0] : null;
+  };
+  
+  const getPlayerById = (id: string) => {
+    return players.find(player => player.id === id) || null;
+  };
+  
+  const getGameById = (id: string) => {
+    return games.find(game => game.id === id) || null;
+  };
+  
+  const getScoresByGameId = (gameId: string) => {
+    return scores.filter(score => score.gameId === gameId);
+  };
+  
+  const getScoresByPlayerId = (playerId: string) => {
+    return scores.filter(score => score.playerId === playerId);
+  };
+  
+  const getPhotosByGameId = (gameId: string) => {
+    return photos.filter(photo => photo.gameId === gameId);
+  };
   
   // Function to load all data from API
   const loadData = async () => {
     setIsLoading(true);
+    setError(null);
+    
     try {
       // Load data in parallel for better performance
       const [playersData, gamesData, scoresData, weatherData, photosData] = await Promise.all([
@@ -152,8 +203,8 @@ export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setScores(scoresData || mockScores);
       setWeather(weatherData || mockWeather);
       setPhotos(photosData || mockPhotos);
-    } catch (error) {
-      console.error('Error loading data:', error);
+    } catch (err) {
+      console.error('Error loading data:', err);
       
       // Set mock data if API fails
       setPlayers(mockPlayers);
@@ -161,6 +212,9 @@ export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setScores(mockScores);
       setWeather(mockWeather);
       setPhotos(mockPhotos);
+      
+      // Set error state
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
       
       toast({
         title: "Using Demo Data",
@@ -174,6 +228,7 @@ export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   
   // Load initial data
   useEffect(() => {
+    console.log("GolfStateProvider initializing...");
     loadData();
   }, []);
 
@@ -186,11 +241,18 @@ export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         weather, 
         photos, 
         isLoading,
+        error,
         setPlayers,
         setGames,
         setScores,
         setPhotos,
-        refreshData: loadData
+        refreshData: loadData,
+        getNextGame,
+        getPlayerById,
+        getGameById,
+        getScoresByGameId,
+        getScoresByPlayerId,
+        getPhotosByGameId
       }}
     >
       {children}
@@ -198,7 +260,7 @@ export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   );
 };
 
-// Custom hook to use the context
+// Custom hook to use the context - explicitly export this
 export const useGolfStateContext = () => {
   const context = useContext(GolfStateContext);
   if (context === undefined) {

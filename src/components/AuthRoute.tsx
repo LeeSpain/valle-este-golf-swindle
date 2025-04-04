@@ -9,7 +9,7 @@ interface AuthRouteProps {
 }
 
 const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false }) => {
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth(); // Changed 'loading' to 'isLoading' to match useAuth hook
   const location = useLocation();
   const [showingContent, setShowingContent] = useState(false);
 
@@ -24,7 +24,7 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   }, []);
 
   // For development purposes, temporarily bypass authentication checks if auth is taking too long
-  if ((loading && !showingContent) || (!user && loading)) {
+  if ((isLoading && !showingContent) || (!user && isLoading)) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">

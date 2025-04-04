@@ -9,8 +9,7 @@ const Photos = () => {
     games, 
     players, 
     photos, 
-    isLoading,
-    addPhoto
+    isLoading 
   } = useGolfState();
 
   return (
@@ -23,7 +22,6 @@ const Photos = () => {
           photos={photos}
           games={games}
           players={players}
-          onUploadPhoto={addPhoto}
           isLoading={isLoading}
         />
       </div>
