@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Flag, Users, Calendar, Award, List, LayoutDashboard, Image } from 'lucide-react';
+import { Flag, Users, Calendar, Award, List, LayoutDashboard, Image, Settings } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -46,12 +47,19 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             <Flag className="h-6 w-6" />
             <h1 className="text-xl font-bold">Karen's Bar Golf Swindle</h1>
           </div>
-          <div>
+          <div className="flex items-center gap-3">
             {isAdmin ? (
               <span className="bg-sand-beige text-golf-green px-2 py-1 rounded-full text-sm font-semibold">
                 Admin
               </span>
-            ) : null}
+            ) : (
+              <Link to="/admin">
+                <Button variant="outline" size="sm" className="bg-transparent border-white text-white hover:bg-white hover:text-golf-green">
+                  <Settings className="h-4 w-4 mr-1" />
+                  Admin
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -143,12 +151,10 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             <Image className={`h-6 w-6 ${location.pathname === '/photos' ? 'text-golf-green' : 'text-gray-500'}`} />
             <span className="text-xs">Photos</span>
           </Link>
-          {isAdmin && (
-            <Link to="/admin" className="flex flex-col items-center p-2">
-              <LayoutDashboard className={`h-6 w-6 ${location.pathname.startsWith('/admin') ? 'text-golf-green' : 'text-gray-500'}`} />
-              <span className="text-xs">Admin</span>
-            </Link>
-          )}
+          <Link to="/admin" className="flex flex-col items-center p-2">
+            <Settings className={`h-6 w-6 ${location.pathname.startsWith('/admin') ? 'text-golf-green' : 'text-gray-500'}`} />
+            <span className="text-xs">Admin</span>
+          </Link>
         </div>
       </div>
     </div>
