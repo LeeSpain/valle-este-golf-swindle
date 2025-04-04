@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -53,11 +52,12 @@ const App = () => {
       <TooltipProvider>
         <GolfStateProvider>
           <NotificationsProvider>
-            {console.log('App providers rendering')}
+            {/* Replace console.log with null to resolve ReactNode type issue */}
             <Toaster />
             <Sonner />
             <BrowserRouter>
               <Routes>
+                
                 <Route path="/login" element={<Login />} />
                 
                 {/* Protected Routes with simplified auth for development */}
