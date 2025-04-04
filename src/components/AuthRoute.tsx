@@ -21,10 +21,16 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
     const timer = setTimeout(() => {
       setShowingContent(true);
       console.log("AuthRoute timeout triggered, showing content anyway");
-    }, 800);
+    }, 500); // Reduced timeout for faster development
     
     return () => clearTimeout(timer);
   }, []);
+
+  // Always allow access in development mode
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Development mode: bypassing authentication");
+    return <>{children}</>;
+  }
 
   // Show loading state briefly
   if (isLoading && !showingContent) {
@@ -38,18 +44,12 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
     );
   }
 
-  // For development: let the page load anyway after timeout, even without auth
-  if ((showingContent && !user) || process.env.NODE_ENV === 'development') {
-    console.log("Development mode or timeout reached: Allowing access without authentication");
-    return <>{children}</>;
-  }
-
-  // Regular auth check for production
-  if (!user && process.env.NODE_ENV !== 'development') {
+  // For production: proper auth checks
+  if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requireAdmin && user && user.role !== 'admin' && process.env.NODE_ENV !== 'development') {
+  if (requireAdmin && user.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
 

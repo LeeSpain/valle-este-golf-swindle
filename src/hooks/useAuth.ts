@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login as apiLogin, logout as apiLogout, getCurrentUser, isAdmin } from '@/api/authService';
 import { toast } from '@/hooks/use-toast';
@@ -10,11 +10,18 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   
+  useEffect(() => {
+    console.log("useAuth hook initialized with user:", user);
+  }, [user]);
+  
   const login = async (email: string, password: string) => {
+    console.log("Login attempt for:", email);
     setIsLoading(true);
     try {
       const response = await apiLogin({ email, password });
       setUser(response.user);
+      
+      console.log("Login successful for:", response.user.email);
       
       toast({
         title: "Login Successful",
@@ -30,6 +37,8 @@ export function useAuth() {
       
       return true;
     } catch (error) {
+      console.error("Login failed:", error);
+      
       toast({
         title: "Login Failed",
         description: "Invalid email or password. Please try again.",
@@ -42,6 +51,7 @@ export function useAuth() {
   };
   
   const logout = () => {
+    console.log("Logging out user");
     apiLogout();
     setUser(null);
     navigate('/');

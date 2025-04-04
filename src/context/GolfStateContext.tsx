@@ -126,22 +126,23 @@ interface GolfStateContextType {
   getScoresByGameId: (gameId: string) => Score[];
   getScoresByPlayerId: (playerId: string) => Score[];
   getPhotosByGameId: (gameId: string) => PhotoItem[];
-  addPhoto?: (photo: Omit<PhotoItem, 'id' | 'createdAt'>) => Promise<boolean>;
-  addGame?: (game: Omit<Game, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
+  addPhoto?: (photo: Partial<PhotoItem>) => Promise<boolean>;
+  addGame?: (game: Partial<Game>) => Promise<boolean>;
   updateGame?: (gameId: string, data: Partial<Game>) => Promise<boolean>;
   deleteGame?: (gameId: string) => Promise<boolean>;
-  addPlayer?: (player: Omit<Player, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
+  addPlayer?: (player: Partial<Player>) => Promise<boolean>;
   updatePlayer?: (playerId: string, data: Partial<Player>) => Promise<boolean>;
   deletePlayer?: (playerId: string) => Promise<boolean>;
-  saveScore?: (score: Omit<Score, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
+  saveScore?: (score: Partial<Score>) => Promise<boolean>;
   verifyScore?: (scoreId: string) => Promise<boolean>;
 }
 
-// Create the context with a default empty value
+// Create the context with a default value
 export const GolfStateContext = createContext<GolfStateContextType | undefined>(undefined);
 
 // Provider component that wraps the app
 export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Initialize state with empty arrays to prevent null references
   const [players, setPlayers] = useState<Player[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [scores, setScores] = useState<Score[]>([]);
@@ -184,6 +185,7 @@ export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   
   // Function to load all data from API
   const loadData = async () => {
+    console.log("GolfStateProvider: loadData called");
     setIsLoading(true);
     setError(null);
     
@@ -197,12 +199,18 @@ export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         getPhotos()
       ]);
       
+      console.log("API data loaded:", { 
+        players: playersData?.length || 0,
+        games: gamesData?.length || 0, 
+        scores: scoresData?.length || 0
+      });
+      
       // Set data from API if it was successful
-      setPlayers(playersData || mockPlayers);
-      setGames(gamesData || mockGames);
-      setScores(scoresData || mockScores);
-      setWeather(weatherData || mockWeather);
-      setPhotos(photosData || mockPhotos);
+      setPlayers(playersData || []);
+      setGames(gamesData || []);
+      setScores(scoresData || []);
+      setWeather(weatherData || null);
+      setPhotos(photosData || []);
     } catch (err) {
       console.error('Error loading data:', err);
       
@@ -223,6 +231,7 @@ export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
     } finally {
       setIsLoading(false);
+      console.log("GolfStateProvider: finished loading data");
     }
   };
   
@@ -232,35 +241,42 @@ export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     loadData();
   }, []);
 
+  // Create value object with all context properties
+  const contextValue: GolfStateContextType = {
+    players, 
+    games, 
+    scores, 
+    weather, 
+    photos, 
+    isLoading,
+    error,
+    setPlayers,
+    setGames,
+    setScores,
+    setPhotos,
+    refreshData: loadData,
+    getNextGame,
+    getPlayerById,
+    getGameById,
+    getScoresByGameId,
+    getScoresByPlayerId,
+    getPhotosByGameId
+  };
+
+  console.log("GolfStateProvider rendering with state:", { 
+    playersCount: players.length,
+    gamesCount: games.length,
+    isLoading
+  });
+
   return (
-    <GolfStateContext.Provider 
-      value={{ 
-        players, 
-        games, 
-        scores, 
-        weather, 
-        photos, 
-        isLoading,
-        error,
-        setPlayers,
-        setGames,
-        setScores,
-        setPhotos,
-        refreshData: loadData,
-        getNextGame,
-        getPlayerById,
-        getGameById,
-        getScoresByGameId,
-        getScoresByPlayerId,
-        getPhotosByGameId
-      }}
-    >
+    <GolfStateContext.Provider value={contextValue}>
       {children}
     </GolfStateContext.Provider>
   );
 };
 
-// Custom hook to use the context - explicitly export this
+// Custom hook to use the context
 export const useGolfStateContext = () => {
   const context = useContext(GolfStateContext);
   if (context === undefined) {

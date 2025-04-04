@@ -7,12 +7,20 @@ import { usePhotos } from '@/hooks/usePhotos';
 
 const Photos = () => {
   const { 
-    games, 
-    players, 
-    photos, 
-    isLoading 
+    games = [], 
+    players = [], 
+    photos = [], 
+    isLoading = true
   } = useGolfState();
+  
   const { addPhoto } = usePhotos();
+
+  console.log("Photos page rendering with:", { 
+    gamesCount: games.length, 
+    playersCount: players.length,
+    photosCount: photos.length,
+    isLoading
+  });
 
   return (
     <Layout>
