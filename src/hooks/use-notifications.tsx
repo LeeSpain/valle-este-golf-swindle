@@ -1,8 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useGames } from '@/hooks/useGames';
-import { useScores } from '@/hooks/useScores';
 import { useGolfStateContext } from '@/context/GolfStateContext';
 
 type NotificationType = 'upcoming-game' | 'score-verified' | 'new-score';
@@ -15,9 +13,7 @@ interface NotificationState {
 
 export function useNotifications() {
   const { toast } = useToast();
-  const { getNextGame } = useGames();
-  const { scores } = useScores();
-  const { players } = useGolfStateContext();
+  const { games, scores, players } = useGolfStateContext();
   const [notificationState, setNotificationState] = useState<NotificationState>({
     upcomingGameChecked: false,
     scoreVerifiedChecked: false,
@@ -36,7 +32,14 @@ export function useNotifications() {
   useEffect(() => {
     if (notificationState.upcomingGameChecked) return;
 
-    const nextGame = getNextGame();
+    // Find next game directly instead of using useGames hook
+    const now = new Date();
+    const upcomingGames = games
+      .filter(game => new Date(game.date) >= now)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    const nextGame = upcomingGames.length > 0 ? upcomingGames[0] : null;
+
     if (nextGame) {
       const gameDate = new Date(nextGame.date);
       const today = new Date();
@@ -60,7 +63,7 @@ export function useNotifications() {
         setNotificationState(prev => ({ ...prev, upcomingGameChecked: true }));
       }
     }
-  }, [getNextGame, notificationState.upcomingGameChecked, toast]);
+  }, [games, notificationState.upcomingGameChecked, toast]);
 
   // Check for newly verified scores
   useEffect(() => {
