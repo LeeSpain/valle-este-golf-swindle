@@ -10,6 +10,7 @@ interface LeaderboardTableProps {
   players: Player[];
   game: Game | null;
   isLoading: boolean;
+  renderPlayerCell?: (player: Player) => React.ReactNode;
 }
 
 interface LeaderboardEntry {
@@ -23,7 +24,13 @@ interface LeaderboardEntry {
   isBandit?: boolean;
 }
 
-const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ scores, players, game, isLoading }) => {
+const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ 
+  scores, 
+  players, 
+  game, 
+  isLoading,
+  renderPlayerCell 
+}) => {
   if (isLoading) {
     return (
       <Card>
@@ -108,39 +115,47 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ scores, players, ga
             </TableRow>
           </TableHeader>
           <TableBody>
-            {leaderboardEntries.map((entry) => (
-              <TableRow key={entry.playerId}>
-                <TableCell className="font-medium">
-                  {entry.rank === 1 ? (
-                    <span className="inline-flex items-center justify-center w-8 h-8 bg-golf-green text-white rounded-full">
-                      1
-                    </span>
-                  ) : (
-                    entry.rank
-                  )}
-                </TableCell>
-                <TableCell>{entry.playerName}</TableCell>
-                <TableCell className="text-center">{entry.handicap}</TableCell>
-                <TableCell className="text-center font-bold">{entry.stablefordPoints}</TableCell>
-                <TableCell className="text-right">
-                  {entry.isKarensPick && (
-                    <span className="bg-rustic-brown text-white text-xs px-2 py-1 rounded-full ml-1">
-                      Karen's Pick
-                    </span>
-                  )}
-                  {entry.isImproved && (
-                    <span className="bg-golf-green text-white text-xs px-2 py-1 rounded-full ml-1">
-                      Most Improved
-                    </span>
-                  )}
-                  {entry.isBandit && (
-                    <span className="bg-gray-700 text-white text-xs px-2 py-1 rounded-full ml-1">
-                      Bandit
-                    </span>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
+            {leaderboardEntries.map((entry) => {
+              const player = players.find(p => p.id === entry.playerId);
+              
+              return (
+                <TableRow key={entry.playerId}>
+                  <TableCell className="font-medium">
+                    {entry.rank === 1 ? (
+                      <span className="inline-flex items-center justify-center w-8 h-8 bg-golf-green text-white rounded-full">
+                        1
+                      </span>
+                    ) : (
+                      entry.rank
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {player && renderPlayerCell 
+                      ? renderPlayerCell(player) 
+                      : entry.playerName}
+                  </TableCell>
+                  <TableCell className="text-center">{entry.handicap}</TableCell>
+                  <TableCell className="text-center font-bold">{entry.stablefordPoints}</TableCell>
+                  <TableCell className="text-right">
+                    {entry.isKarensPick && (
+                      <span className="bg-rustic-brown text-white text-xs px-2 py-1 rounded-full ml-1">
+                        Karen's Pick
+                      </span>
+                    )}
+                    {entry.isImproved && (
+                      <span className="bg-golf-green text-white text-xs px-2 py-1 rounded-full ml-1">
+                        Most Improved
+                      </span>
+                    )}
+                    {entry.isBandit && (
+                      <span className="bg-gray-700 text-white text-xs px-2 py-1 rounded-full ml-1">
+                        Bandit
+                      </span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent>
