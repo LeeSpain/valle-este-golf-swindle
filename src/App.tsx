@@ -12,12 +12,12 @@ import Leaderboard from "./pages/Leaderboard";
 import Photos from "./pages/Photos";
 import PlayerProfile from "./pages/PlayerProfile";
 import GameDetails from "./pages/GameDetails";
-import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Players from "./pages/admin/Players";
 import Games from "./pages/admin/Games";
 import Scores from "./pages/admin/Scores";
+import AdminSettings from "./pages/admin/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,7 +34,6 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/photos" element={<Photos />} />
-              <Route path="/settings" element={<Settings />} />
               <Route path="/help" element={<Help />} />
               <Route path="/players/:playerId" element={<PlayerProfile />} />
               <Route path="/games/:gameId" element={<GameDetails />} />
@@ -42,6 +41,7 @@ const App = () => (
               <Route path="/admin/players" element={<Players />} />
               <Route path="/admin/games" element={<Games />} />
               <Route path="/admin/scores" element={<Scores />} />
+              <Route path="/admin/settings" element={<AdminSettings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

@@ -25,9 +25,9 @@ const Settings = () => {
   };
 
   return (
-    <Layout>
+    <Layout isAdmin={true}>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Settings</h1>
+        <h1 className="text-2xl font-bold">Admin Settings</h1>
         
         <NavigationMenu>
           <NavigationMenuList>
@@ -168,15 +168,15 @@ const Settings = () => {
         
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Profile Settings</CardTitle>
-            <CardDescription>Manage your personal information</CardDescription>
+            <CardTitle>System Settings</CardTitle>
+            <CardDescription>Manage application settings</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-2">
               <Label htmlFor="email-notifications">Email Notifications</Label>
               <div className="flex items-center space-x-2">
                 <Switch id="email-notifications" />
-                <Label htmlFor="email-notifications">Receive email updates about games and scores</Label>
+                <Label htmlFor="email-notifications">Send email updates about games and scores</Label>
               </div>
             </div>
             
@@ -184,7 +184,7 @@ const Settings = () => {
               <Label htmlFor="privacy">Privacy Settings</Label>
               <div className="flex items-center space-x-2">
                 <Switch id="privacy" />
-                <Label htmlFor="privacy">Make my profile visible to other players</Label>
+                <Label htmlFor="privacy">Make player profiles visible to all users</Label>
               </div>
             </div>
             
