@@ -146,7 +146,7 @@
   }
   
   .glass-card {
-    @apply bg-white/90 backdrop-blur-sm border border-white/40 shadow-lg rounded-xl;
+    @apply bg-white/95 backdrop-blur-sm border border-white/50 shadow-lg rounded-xl;
   }
   
   .section-divider {
