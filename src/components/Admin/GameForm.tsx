@@ -18,6 +18,11 @@ interface GameFormProps {
   onCancel: () => void;
 }
 
+// Define a new interface that has date as string for the form state
+interface GameFormState extends Omit<Partial<Game>, 'date'> {
+  date: string;
+}
+
 const GameForm: React.FC<GameFormProps> = ({ 
   game, 
   players, 
@@ -32,9 +37,9 @@ const GameForm: React.FC<GameFormProps> = ({
     return date.toISOString().split('T')[0];
   };
 
-  const [formData, setFormData] = useState<Partial<Game>>({
+  const [formData, setFormData] = useState<GameFormState>({
     ...game,
-    // Store date as a string for the input field, it will be converted back to Date on submit
+    // Store date as a string for the input field
     date: formatDateToString(game.date),
     players: game.players || [],
   });
@@ -75,10 +80,10 @@ const GameForm: React.FC<GameFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Convert date string back to Date object
-    const processedData = {
+    // Convert date string back to Date object for the Game type
+    const processedData: Partial<Game> = {
       ...formData,
-      date: formData.date ? new Date(formData.date as string) : new Date(),
+      date: new Date(formData.date),
     };
     
     onSubmit(processedData);
@@ -101,7 +106,7 @@ const GameForm: React.FC<GameFormProps> = ({
                 id="date"
                 name="date"
                 type="date"
-                value={formData.date as string}
+                value={formData.date}
                 onChange={handleChange}
                 required
               />
