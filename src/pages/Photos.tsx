@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Layout from '@/components/Layout';
 import PhotoWall from '@/components/PhotoWall/PhotoWall';
 import { useGolfState } from '@/hooks/useGolfState';
@@ -15,12 +15,14 @@ const Photos = () => {
   
   const { addPhoto } = usePhotos();
 
-  console.log("Photos page rendering with:", { 
-    gamesCount: games.length, 
-    playersCount: players.length,
-    photosCount: photos.length,
-    isLoading
-  });
+  useEffect(() => {
+    console.log("Photos page mounted with state:", { 
+      gamesCount: games.length, 
+      playersCount: players.length,
+      photosCount: photos.length,
+      isLoading
+    });
+  }, [games, players, photos, isLoading]);
 
   return (
     <Layout>

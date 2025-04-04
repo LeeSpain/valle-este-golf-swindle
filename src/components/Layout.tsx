@@ -57,6 +57,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   // Ensure the component is mounted before rendering content that might depend on browser APIs
   useEffect(() => {
     setMounted(true);
+    console.log("Layout mounted successfully");
   }, []);
   
   const toggleMobileMenu = () => {
