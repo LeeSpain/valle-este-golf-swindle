@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,12 +19,32 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				montserrat: ['Montserrat', 'sans-serif'],
+				raleway: ['Raleway', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				// Custom colors for the golf app
+				'golf-green': {
+					DEFAULT: '#2A5E36',
+					light: '#4D8359',
+					dark: '#1E4326',
+				},
+				'rustic-brown': {
+					DEFAULT: '#8B572A',
+					light: '#A57A55',
+					dark: '#6A4020',
+				},
+				'sand-beige': {
+					DEFAULT: '#E8D4A9',
+					light: '#F5E9D0',
+					dark: '#D6BB86',
+				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
