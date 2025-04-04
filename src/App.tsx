@@ -1,8 +1,9 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { GolfStateProvider } from "./context/GolfStateContext";
@@ -34,6 +35,8 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
+  const [appReady, setAppReady] = useState(false);
+  
   useEffect(() => {
     console.log('App component mounted');
     
@@ -43,123 +46,141 @@ const App = () => {
       isDevelopment: process.env.NODE_ENV === 'development'
     });
     
+    // Mark app as ready after a small delay to ensure everything is loaded
+    const timer = setTimeout(() => {
+      setAppReady(true);
+      console.log('App marked as ready');
+    }, 100);
+    
     return () => {
+      clearTimeout(timer);
       console.log('App component unmounted');
     };
   }, []);
 
+  if (!appReady) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
+          <p className="mt-4 text-golf-green">Loading application...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <GolfStateProvider>
-          <NotificationsProvider>
-            {/* Replace console.log with null to resolve ReactNode type issue */}
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                
-                <Route path="/login" element={<Login />} />
-                
-                {/* Protected Routes with simplified auth for development */}
-                <Route 
-                  path="/" 
-                  element={
-                    <AuthRoute>
-                      <Index />
-                    </AuthRoute>
-                  } 
-                />
-                <Route 
-                  path="/leaderboard" 
-                  element={
-                    <AuthRoute>
-                      <Leaderboard />
-                    </AuthRoute>
-                  } 
-                />
-                <Route 
-                  path="/photos" 
-                  element={
-                    <AuthRoute>
-                      <Photos />
-                    </AuthRoute>
-                  } 
-                />
-                <Route 
-                  path="/help" 
-                  element={
-                    <AuthRoute>
-                      <Help />
-                    </AuthRoute>
-                  } 
-                />
-                <Route 
-                  path="/players/:playerId" 
-                  element={
-                    <AuthRoute>
-                      <PlayerProfile />
-                    </AuthRoute>
-                  } 
-                />
-                <Route 
-                  path="/games/:gameId" 
-                  element={
-                    <AuthRoute>
-                      <GameDetails />
-                    </AuthRoute>
-                  } 
-                />
-                
-                {/* Admin Routes */}
-                <Route 
-                  path="/admin" 
-                  element={
-                    <AuthRoute requireAdmin>
-                      <AdminDashboard />
-                    </AuthRoute>
-                  } 
-                />
-                <Route 
-                  path="/admin/players" 
-                  element={
-                    <AuthRoute requireAdmin>
-                      <Players />
-                    </AuthRoute>
-                  } 
-                />
-                <Route 
-                  path="/admin/games" 
-                  element={
-                    <AuthRoute requireAdmin>
-                      <Games />
-                    </AuthRoute>
-                  } 
-                />
-                <Route 
-                  path="/admin/scores" 
-                  element={
-                    <AuthRoute requireAdmin>
-                      <Scores />
-                    </AuthRoute>
-                  } 
-                />
-                <Route 
-                  path="/admin/settings" 
-                  element={
-                    <AuthRoute requireAdmin>
-                      <AdminSettings />
-                    </AuthRoute>
-                  } 
-                />
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </NotificationsProvider>
-        </GolfStateProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <GolfStateProvider>
+            <NotificationsProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  
+                  {/* Protected Routes with simplified auth for development */}
+                  <Route 
+                    path="/" 
+                    element={
+                      <AuthRoute>
+                        <Index />
+                      </AuthRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/leaderboard" 
+                    element={
+                      <AuthRoute>
+                        <Leaderboard />
+                      </AuthRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/photos" 
+                    element={
+                      <AuthRoute>
+                        <Photos />
+                      </AuthRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/help" 
+                    element={
+                      <AuthRoute>
+                        <Help />
+                      </AuthRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/players/:playerId" 
+                    element={
+                      <AuthRoute>
+                        <PlayerProfile />
+                      </AuthRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/games/:gameId" 
+                    element={
+                      <AuthRoute>
+                        <GameDetails />
+                      </AuthRoute>
+                    } 
+                  />
+                  
+                  {/* Admin Routes */}
+                  <Route 
+                    path="/admin" 
+                    element={
+                      <AuthRoute requireAdmin>
+                        <AdminDashboard />
+                      </AuthRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/players" 
+                    element={
+                      <AuthRoute requireAdmin>
+                        <Players />
+                      </AuthRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/games" 
+                    element={
+                      <AuthRoute requireAdmin>
+                        <Games />
+                      </AuthRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/scores" 
+                    element={
+                      <AuthRoute requireAdmin>
+                        <Scores />
+                      </AuthRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/settings" 
+                    element={
+                      <AuthRoute requireAdmin>
+                        <AdminSettings />
+                      </AuthRoute>
+                    } 
+                  />
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </NotificationsProvider>
+          </GolfStateProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 
