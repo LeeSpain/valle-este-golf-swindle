@@ -8,6 +8,7 @@ import { User } from '@/types';
 export function useAuth() {
   const [user, setUser] = useState<User | null>(getCurrentUser());
   const [isLoading, setIsLoading] = useState(false);
+  const [authInitialized, setAuthInitialized] = useState(false);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -19,7 +20,13 @@ export function useAuth() {
       console.log("Restoring user from localStorage:", storedUser);
       setUser(storedUser);
     }
-  }, [user]);
+    
+    // Mark auth as initialized after the initial check
+    if (!authInitialized) {
+      setAuthInitialized(true);
+      console.log("Auth initialization complete");
+    }
+  }, [user, authInitialized]);
   
   const login = async (email: string, password: string) => {
     console.log("Login attempt for:", email);
@@ -74,6 +81,7 @@ export function useAuth() {
     isLoading,
     isAdmin: isAdmin(),
     login,
-    logout
+    logout,
+    authInitialized
   };
 }

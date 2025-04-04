@@ -12,10 +12,8 @@ interface AuthRouteProps {
 }
 
 const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false }) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, authInitialized } = useAuth();
   const location = useLocation();
-  const [showingContent, setShowingContent] = useState(false);
-  const [forceRender, setForceRender] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [renderCount, setRenderCount] = useState(0);
 
@@ -26,8 +24,7 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
       isLoading, 
       path: location.pathname,
       requireAdmin,
-      showingContent,
-      forceRender,
+      authInitialized,
       authError
     });
     setRenderCount(prev => prev + 1);
@@ -38,17 +35,14 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
       user: user?.email, 
       isLoading, 
       path: location.pathname,
-      requireAdmin 
+      requireAdmin,
+      authInitialized
     });
     
-    // Display content immediately instead of waiting
-    setShowingContent(true);
-    
-    // No longer need emergency timers
     return () => {
       console.log("AuthRoute unmounted");
     };
-  }, [user, isLoading, location.pathname, requireAdmin]);
+  }, [user, isLoading, location.pathname, requireAdmin, authInitialized]);
 
   // Handle errors that might occur during auth checking
   useEffect(() => {
@@ -64,56 +58,14 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
     }
   }, [user, requireAdmin]);
 
-  // Always allow access in development mode
-  const bypassAuth = process.env.NODE_ENV === 'development' || forceRender || showingContent;
-  
-  if (bypassAuth) {
-    console.log(`${process.env.NODE_ENV === 'development' ? "Development mode" : showingContent ? "Content showing" : "Force render"}: bypassing strict authentication checks`);
-    
-    // Still show error for admin routes if we have the user but they're not admin
-    if (requireAdmin && user && user.role !== 'admin' && !forceRender) {
-      return (
-        <div className="p-8 max-w-3xl mx-auto">
-          <Alert variant="destructive" className="my-4">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Access Denied</AlertTitle>
-            <AlertDescription>
-              You don't have permission to access this page. Admin privileges required.
-            </AlertDescription>
-          </Alert>
-          {/* Add a link back to home */}
-          <div className="mt-4">
-            <Navigate to="/" replace />
-          </div>
-        </div>
-      );
-    }
-    
-    // Wrap the content in an additional error boundary
-    return (
-      <ErrorBoundary>
-        <div data-testid="auth-route-content">
-          {authError ? (
-            <Alert variant="destructive" className="my-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Authentication Issue</AlertTitle>
-              <AlertDescription>{authError}</AlertDescription>
-            </Alert>
-          ) : null}
-          {children}
-        </div>
-      </ErrorBoundary>
-    );
-  }
-
-  // Show loading state briefly
-  if (isLoading && !showingContent) {
-    console.log("AuthRoute showing loading state");
+  // Show loading state if auth isn't initialized yet
+  if (isLoading || !authInitialized) {
+    console.log("AuthRoute showing loading state", { isLoading, authInitialized });
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
-          <p className="mt-4 text-golf-green">Loading content...</p>
+          <p className="mt-4 text-golf-green">Verifying authentication...</p>
         </div>
       </div>
     );
@@ -132,18 +84,18 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
     );
   }
 
-  // For production: proper auth checks
-  if (!user && !forceRender) {
+  // Proper auth checks
+  if (!user) {
     console.log("User not authenticated, redirecting to login");
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requireAdmin && user?.role !== 'admin' && !forceRender) {
+  if (requireAdmin && user.role !== 'admin') {
     console.log("User doesn't have admin privileges, redirecting to home");
     return <Navigate to="/" replace />;
   }
 
-  console.log("AuthRoute rendering children");
+  console.log("AuthRoute rendering children - user authenticated properly");
   return (
     <ErrorBoundary>
       <div data-testid="auth-route-content">
