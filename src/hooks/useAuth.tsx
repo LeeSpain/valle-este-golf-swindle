@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login as apiLogin, logout as apiLogout, getCurrentUser, isAdmin } from '@/api/authService';
 import { toast } from '@/hooks/use-toast';
@@ -15,27 +15,31 @@ export function useAuth() {
   useEffect(() => {
     console.log("Auth hook initializing...");
     
-    // Reset loading state
-    setIsLoading(true);
-    
-    try {
-      // Get user from localStorage on initial load
-      const storedUser = getCurrentUser();
-      console.log("User from localStorage:", storedUser);
+    const initializeAuth = async () => {
+      setIsLoading(true);
       
-      // Set user state from localStorage
-      setUser(storedUser);
-    } catch (error) {
-      console.error("Error during auth initialization:", error);
-    } finally {
-      // Always mark initialization as complete and loading as done
-      setAuthInitialized(true);
-      setIsLoading(false);
-      console.log("Auth initialization complete");
-    }
+      try {
+        // Get user from localStorage on initial load
+        const storedUser = getCurrentUser();
+        console.log("User from localStorage:", storedUser);
+        
+        // Set user state from localStorage
+        setUser(storedUser);
+      } catch (error) {
+        console.error("Error during auth initialization:", error);
+        setUser(null);
+      } finally {
+        // Always mark initialization as complete and loading as done
+        setAuthInitialized(true);
+        setIsLoading(false);
+        console.log("Auth initialization complete");
+      }
+    };
+    
+    initializeAuth();
   }, []);
   
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     console.log("Login attempt for:", email);
     setIsLoading(true);
     
@@ -71,9 +75,9 @@ export function useAuth() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [navigate]);
   
-  const logout = () => {
+  const logout = useCallback(() => {
     console.log("Logging out user");
     apiLogout();
     setUser(null);
@@ -83,12 +87,12 @@ export function useAuth() {
       title: "Logged Out",
       description: "You have been logged out successfully."
     });
-  };
+  }, [navigate]);
   
   return {
     user,
     isLoading,
-    isAdmin: isAdmin(),
+    isAdmin: user?.role === 'admin',
     login,
     logout,
     authInitialized

@@ -1,5 +1,5 @@
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -15,16 +15,38 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   const { user, isLoading, authInitialized } = useAuth();
   const location = useLocation();
   
-  // Debug logging
-  console.log("AuthRoute:", { 
-    user: user?.email || "none", 
-    isLoading, 
-    authInitialized,
-    path: location.pathname
-  });
+  // Debug logging on mount and on any auth state change
+  useEffect(() => {
+    console.log("AuthRoute mounted/updated:", { 
+      user: user?.email || "none", 
+      isAuth: !!user,
+      isLoading, 
+      authInitialized,
+      path: location.pathname,
+      requireAdmin
+    });
+    
+    return () => {
+      console.log("AuthRoute unmounting from:", location.pathname);
+    };
+  }, [user, isLoading, authInitialized, location.pathname, requireAdmin]);
 
   // If auth is still initializing, show a simple loading state
-  if (!authInitialized || isLoading) {
+  if (!authInitialized) {
+    console.log("Auth not initialized yet, showing loading");
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
+          <p className="mt-4 text-golf-green">Initializing application...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Auth is initialized but still loading
+  if (isLoading) {
+    console.log("Auth initialized but still loading");
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
@@ -43,6 +65,7 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   
   // Check admin access if required
   if (requireAdmin && user.role !== 'admin') {
+    console.log("User doesn't have admin access");
     return (
       <div className="p-8 max-w-3xl mx-auto">
         <Alert variant="destructive">
@@ -57,6 +80,7 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   }
   
   // User is authenticated, render children
+  console.log("Auth check passed, rendering protected content");
   return (
     <ErrorBoundary>
       <div data-testid="auth-route-content">

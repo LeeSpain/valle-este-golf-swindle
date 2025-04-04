@@ -1,4 +1,5 @@
-import React, { useEffect, useState, Suspense } from 'react';
+
+import React, { Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,21 +23,14 @@ import Scores from "./pages/admin/Scores";
 import AdminSettings from "./pages/admin/Settings";
 import NotFound from "./pages/NotFound";
 import './App.css';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
 
-// Create a stable QueryClient instance 
+// Create a stable QueryClient instance with simplified configuration
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
-      meta: {
-        errorHandler: (error: any) => {
-          console.error("Query error:", error);
-        }
-      }
     },
   },
 });
@@ -51,59 +45,9 @@ const LoadingFallback = () => (
   </div>
 );
 
-// Application error fallback
-const AppErrorFallback = ({ error }: { error: Error }) => (
-  <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
-    <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-6 border border-red-200">
-      <h2 className="text-2xl font-bold text-red-600 mb-4">Application Error</h2>
-      <Alert variant="destructive" className="my-4">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Something went wrong</AlertTitle>
-        <AlertDescription>
-          {error.message || "An unknown error occurred"}
-        </AlertDescription>
-      </Alert>
-      <p className="text-gray-600 mb-6">
-        Try refreshing the page. If the problem persists, please contact support.
-      </p>
-      <button
-        onClick={() => window.location.reload()}
-        className="py-2 px-4 bg-golf-green hover:bg-golf-green-dark text-white rounded-md shadow-sm transition-colors"
-      >
-        Refresh Page
-      </button>
-    </div>
-  </div>
-);
-
 const App = () => {
-  const [appReady, setAppReady] = useState(true);
-  const [appError, setAppError] = useState<Error | null>(null);
+  console.log('App component rendering');
   
-  useEffect(() => {
-    console.log('App component mounted');
-    
-    // Log environment info
-    console.log('Environment:', {
-      NODE_ENV: process.env.NODE_ENV,
-      isDevelopment: process.env.NODE_ENV === 'development'
-    });
-    
-    return () => {
-      console.log('App component unmounted');
-    };
-  }, []);
-
-  // Handle any errors in the app
-  if (appError) {
-    return <AppErrorFallback error={appError} />;
-  }
-
-  // Simple emergency rendering if something fails
-  if (!appReady) {
-    return <LoadingFallback />;
-  }
-
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
