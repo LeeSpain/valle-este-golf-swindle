@@ -1,68 +1,76 @@
 
-import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { Player } from '@/types';
-import { createPlayer } from '@/data/mockData';
 import { toast } from '@/hooks/use-toast';
 import { useGolfStateContext } from '@/context/GolfStateContext';
+import { createPlayer, updatePlayer, deletePlayer } from '@/api/playerService';
 
 export function usePlayers() {
-  const { players, setPlayers, games } = useGolfStateContext();
-
-  const addPlayer = (playerData: Partial<Player>) => {
-    const newPlayer = createPlayer(playerData);
-    setPlayers(prev => [...prev, newPlayer]);
-    toast({
-      title: "Player Added",
-      description: `${newPlayer.name} has been added to the roster.`
-    });
-    return newPlayer;
-  };
+  const { players, setPlayers } = useGolfStateContext();
   
-  const updatePlayer = (playerId: string, data: Partial<Player>) => {
-    setPlayers(prev => 
-      prev.map(player => 
-        player.id === playerId 
-          ? { ...player, ...data, updatedAt: new Date() } 
-          : player
-      )
-    );
-    toast({
-      title: "Player Updated",
-      description: `Player information has been updated.`
-    });
-  };
-  
-  const deletePlayer = (playerId: string) => {
-    // Check if player is part of any games
-    const playerGames = games.filter(game => game.players.includes(playerId));
-    
-    if (playerGames.length > 0) {
+  const addPlayer = async (playerData: Omit<Player, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const newPlayer = await createPlayer(playerData);
+      setPlayers(prev => [...prev, newPlayer]);
+      
       toast({
-        title: "Cannot Delete Player",
-        description: "This player is registered for games and cannot be deleted.",
-        variant: "destructive"
+        title: "Player Added",
+        description: `${newPlayer.name} has been added to the swindle.`
       });
+      
+      return newPlayer;
+    } catch (error) {
+      console.error('Error adding player:', error);
+      return null;
+    }
+  };
+  
+  const updatePlayerById = async (playerId: string, data: Partial<Player>) => {
+    try {
+      const updatedPlayer = await updatePlayer(playerId, data);
+      
+      setPlayers(prev => 
+        prev.map(player => 
+          player.id === playerId ? updatedPlayer : player
+        )
+      );
+      
+      toast({
+        title: "Player Updated",
+        description: `${updatedPlayer.name}'s details have been updated.`
+      });
+      
+      return updatedPlayer;
+    } catch (error) {
+      console.error('Error updating player:', error);
+      return null;
+    }
+  };
+  
+  const deletePlayerById = async (playerId: string) => {
+    try {
+      await deletePlayer(playerId);
+      const playerToDelete = players.find(p => p.id === playerId);
+      
+      setPlayers(prev => prev.filter(player => player.id !== playerId));
+      
+      if (playerToDelete) {
+        toast({
+          title: "Player Removed",
+          description: `${playerToDelete.name} has been removed from the swindle.`
+        });
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting player:', error);
       return false;
     }
-    
-    const playerToDelete = players.find(p => p.id === playerId);
-    setPlayers(prev => prev.filter(player => player.id !== playerId));
-    
-    if (playerToDelete) {
-      toast({
-        title: "Player Deleted",
-        description: `${playerToDelete.name} has been removed from the roster.`
-      });
-    }
-    
-    return true;
   };
-
+  
   return {
     players,
     addPlayer,
-    updatePlayer,
-    deletePlayer
+    updatePlayer: updatePlayerById,
+    deletePlayer: deletePlayerById
   };
 }

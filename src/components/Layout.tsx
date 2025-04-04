@@ -1,9 +1,20 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Flag, Users, Calendar, Award, List, LayoutDashboard, Image, Settings, HelpCircle } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Flag, Users, Calendar, Award, List, LayoutDashboard, Image, Settings, HelpCircle, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from '@/hooks/useAuth';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface NavItemProps {
   to: string;
@@ -38,6 +49,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   const location = useLocation();
+  const { user, logout } = useAuth();
   
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -67,6 +79,29 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                   Admin
                 </Button>
               </Link>
+            )}
+            
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="p-1 rounded-full" size="sm">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.email)}&background=random`} />
+                      <AvatarFallback>{user.email.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem onClick={logout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>

@@ -7,7 +7,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { GolfStateProvider } from "./context/GolfStateContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
+import AuthRoute from "./components/AuthRoute";
 import Index from "./pages/Index";
+import Login from "./pages/Login";
 import Leaderboard from "./pages/Leaderboard";
 import Photos from "./pages/Photos";
 import PlayerProfile from "./pages/PlayerProfile";
@@ -20,7 +22,15 @@ import Scores from "./pages/admin/Scores";
 import AdminSettings from "./pages/admin/Settings";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -31,17 +41,23 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
-              <Route path="/photos" element={<Photos />} />
-              <Route path="/help" element={<Help />} />
-              <Route path="/players/:playerId" element={<PlayerProfile />} />
-              <Route path="/games/:gameId" element={<GameDetails />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/players" element={<Players />} />
-              <Route path="/admin/games" element={<Games />} />
-              <Route path="/admin/scores" element={<Scores />} />
-              <Route path="/admin/settings" element={<AdminSettings />} />
+              <Route path="/login" element={<Login />} />
+              
+              {/* Protected Routes */}
+              <Route path="/" element={<AuthRoute><Index /></AuthRoute>} />
+              <Route path="/leaderboard" element={<AuthRoute><Leaderboard /></AuthRoute>} />
+              <Route path="/photos" element={<AuthRoute><Photos /></AuthRoute>} />
+              <Route path="/help" element={<AuthRoute><Help /></AuthRoute>} />
+              <Route path="/players/:playerId" element={<AuthRoute><PlayerProfile /></AuthRoute>} />
+              <Route path="/games/:gameId" element={<AuthRoute><GameDetails /></AuthRoute>} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AuthRoute requireAdmin><AdminDashboard /></AuthRoute>} />
+              <Route path="/admin/players" element={<AuthRoute requireAdmin><Players /></AuthRoute>} />
+              <Route path="/admin/games" element={<AuthRoute requireAdmin><Games /></AuthRoute>} />
+              <Route path="/admin/scores" element={<AuthRoute requireAdmin><Scores /></AuthRoute>} />
+              <Route path="/admin/settings" element={<AuthRoute requireAdmin><AdminSettings /></AuthRoute>} />
+              
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
