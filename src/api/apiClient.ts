@@ -4,6 +4,14 @@ import { toast } from "@/hooks/use-toast";
 // Base URL for API calls - change this to your real API endpoint
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.karensbarswinglegolf.com';
 
+// Mock data for demo purposes
+const mockData = {
+  players: [],
+  games: [],
+  scores: [],
+  photos: []
+};
+
 /**
  * Generic API client with error handling
  */
@@ -11,6 +19,21 @@ export async function apiClient<T>(
   endpoint: string, 
   options: RequestInit = {}
 ): Promise<T> {
+  // For demo purposes, simulate API responses
+  if (endpoint.startsWith('/players')) {
+    return mockData.players as unknown as T;
+  }
+  if (endpoint.startsWith('/games')) {
+    return mockData.games as unknown as T;
+  }
+  if (endpoint.startsWith('/scores')) {
+    return mockData.scores as unknown as T;
+  }
+  if (endpoint.startsWith('/photos')) {
+    return mockData.photos as unknown as T;
+  }
+
+  // Real API logic (currently unused for demo)
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
