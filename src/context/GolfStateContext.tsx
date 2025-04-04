@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Player, Game, Score, WeatherData, PhotoItem } from '@/types';
 import { getPlayers } from '@/api/playerService';
@@ -7,6 +6,9 @@ import { getScores } from '@/api/scoreService';
 import { getWeather } from '@/api/weatherService';
 import { getPhotos } from '@/api/photoService';
 import { toast } from '@/hooks/use-toast';
+import { createPlayer, updatePlayer, deletePlayer } from '@/api/playerService';
+import { createGame, updateGame, deleteGame } from '@/api/gameService';
+import { createScore, updateScore, verifyScore as verifyScoreApi } from '@/api/scoreService';
 
 // Mock data for fallback
 const mockPlayers: Player[] = [
@@ -126,15 +128,15 @@ interface GolfStateContextType {
   getScoresByGameId: (gameId: string) => Score[];
   getScoresByPlayerId: (playerId: string) => Score[];
   getPhotosByGameId: (gameId: string) => PhotoItem[];
-  addPhoto?: (photo: Partial<PhotoItem>) => Promise<boolean>;
-  addGame?: (game: Partial<Game>) => Promise<boolean>;
-  updateGame?: (gameId: string, data: Partial<Game>) => Promise<boolean>;
-  deleteGame?: (gameId: string) => Promise<boolean>;
-  addPlayer?: (player: Partial<Player>) => Promise<boolean>;
-  updatePlayer?: (playerId: string, data: Partial<Player>) => Promise<boolean>;
-  deletePlayer?: (playerId: string) => Promise<boolean>;
-  saveScore?: (score: Partial<Score>) => Promise<boolean>;
-  verifyScore?: (scoreId: string) => Promise<boolean>;
+  addPhoto: (photo: Partial<PhotoItem>) => Promise<boolean>;
+  addGame: (game: Partial<Game>) => Promise<boolean>;
+  updateGame: (gameId: string, data: Partial<Game>) => Promise<boolean>;
+  deleteGame: (gameId: string) => Promise<boolean>;
+  addPlayer: (player: Partial<Player>) => Promise<boolean>;
+  updatePlayer: (playerId: string, data: Partial<Player>) => Promise<boolean>;
+  deletePlayer: (playerId: string) => Promise<boolean>;
+  saveScore: (score: Partial<Score>) => Promise<boolean>;
+  verifyScore: (scoreId: string) => Promise<boolean>;
 }
 
 // Create the context with a default value
@@ -181,6 +183,199 @@ export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   
   const getPhotosByGameId = (gameId: string) => {
     return photos.filter(photo => photo.gameId === gameId);
+  };
+  
+  // CRUD operations for Players
+  const addPlayer = async (player: Partial<Player>): Promise<boolean> => {
+    try {
+      const newPlayer = await createPlayer(player);
+      setPlayers(prev => [...prev, newPlayer]);
+      
+      toast({
+        title: "Player Added",
+        description: `${newPlayer.name} has been added to the swindle.`
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error adding player:', error);
+      return false;
+    }
+  };
+  
+  const updatePlayerById = async (playerId: string, data: Partial<Player>): Promise<boolean> => {
+    try {
+      const updatedPlayer = await updatePlayer(playerId, data);
+      
+      setPlayers(prev => 
+        prev.map(player => 
+          player.id === playerId ? updatedPlayer : player
+        )
+      );
+      
+      toast({
+        title: "Player Updated",
+        description: `${updatedPlayer.name}'s details have been updated.`
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating player:', error);
+      return false;
+    }
+  };
+  
+  const deletePlayerById = async (playerId: string): Promise<boolean> => {
+    try {
+      await deletePlayer(playerId);
+      const playerToDelete = players.find(p => p.id === playerId);
+      
+      setPlayers(prev => prev.filter(player => player.id !== playerId));
+      
+      if (playerToDelete) {
+        toast({
+          title: "Player Removed",
+          description: `${playerToDelete.name} has been removed from the swindle.`
+        });
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting player:', error);
+      return false;
+    }
+  };
+  
+  // CRUD operations for Games
+  const addGameOperation = async (game: Partial<Game>): Promise<boolean> => {
+    try {
+      const newGame = await createGame(game);
+      setGames(prev => [...prev, newGame]);
+      
+      toast({
+        title: "Game Scheduled",
+        description: `New game has been scheduled for ${new Date(newGame.date).toLocaleDateString()}.`
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error adding game:', error);
+      return false;
+    }
+  };
+  
+  const updateGameById = async (gameId: string, data: Partial<Game>): Promise<boolean> => {
+    try {
+      const updatedGame = await updateGame(gameId, data);
+      
+      setGames(prev => 
+        prev.map(game => 
+          game.id === gameId ? updatedGame : game
+        )
+      );
+      
+      toast({
+        title: "Game Updated",
+        description: `Game details have been updated.`
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating game:', error);
+      return false;
+    }
+  };
+  
+  const deleteGameById = async (gameId: string): Promise<boolean> => {
+    try {
+      await deleteGame(gameId);
+      
+      setGames(prev => prev.filter(game => game.id !== gameId));
+      
+      toast({
+        title: "Game Deleted",
+        description: `Game has been removed.`
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting game:', error);
+      return false;
+    }
+  };
+  
+  // Operations for Scores
+  const saveScoreOperation = async (score: Partial<Score>): Promise<boolean> => {
+    try {
+      let savedScore;
+      
+      if (score.id) {
+        savedScore = await updateScore(score.id, score);
+        setScores(prev => prev.map(s => s.id === score.id ? savedScore : s));
+      } else {
+        savedScore = await createScore(score as any); // Cast to any to bypass TypeScript error
+        setScores(prev => [...prev, savedScore]);
+      }
+      
+      toast({
+        title: "Score Saved",
+        description: "The player's score has been recorded."
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error saving score:', error);
+      return false;
+    }
+  };
+  
+  const verifyScoreOperation = async (scoreId: string): Promise<boolean> => {
+    try {
+      const verifiedScore = await verifyScoreApi(scoreId);
+      
+      setScores(prev => 
+        prev.map(score => 
+          score.id === scoreId ? { ...score, isVerified: true } : score
+        )
+      );
+      
+      toast({
+        title: "Score Verified",
+        description: "The score has been verified and is now official."
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error verifying score:', error);
+      return false;
+    }
+  };
+  
+  // Photo operations (dummy implementation for now)
+  const addPhotoOperation = async (photo: Partial<PhotoItem>): Promise<boolean> => {
+    try {
+      // In a real app, this would call an API
+      const newPhoto = {
+        id: `ph${Date.now()}`,
+        url: photo.url || 'https://placeholder.com/150',
+        caption: photo.caption || '',
+        uploadedBy: photo.uploadedBy || 'anonymous',
+        gameId: photo.gameId || '',
+        createdAt: new Date()
+      };
+      
+      setPhotos(prev => [...prev, newPhoto as PhotoItem]);
+      
+      toast({
+        title: "Photo Added",
+        description: "Your photo has been uploaded."
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error adding photo:', error);
+      return false;
+    }
   };
   
   // Function to load all data from API
@@ -260,7 +455,16 @@ export const GolfStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     getGameById,
     getScoresByGameId,
     getScoresByPlayerId,
-    getPhotosByGameId
+    getPhotosByGameId,
+    addPhoto: addPhotoOperation,
+    addGame: addGameOperation,
+    updateGame: updateGameById,
+    deleteGame: deleteGameById,
+    addPlayer,
+    updatePlayer: updatePlayerById,
+    deletePlayer: deletePlayerById,
+    saveScore: saveScoreOperation,
+    verifyScore: verifyScoreOperation
   };
 
   console.log("GolfStateProvider rendering with state:", { 
