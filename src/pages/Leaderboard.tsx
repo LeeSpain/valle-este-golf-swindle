@@ -1,9 +1,12 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import LeaderboardTable from '@/components/Leaderboard/LeaderboardTable';
 import { useGolfState } from '@/hooks/useGolfState';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { User, Medal } from 'lucide-react';
 
 const Leaderboard = () => {
   const { games, players, scores, isLoading } = useGolfState();
@@ -51,11 +54,31 @@ const Leaderboard = () => {
           </div>
         </div>
         
+        {selectedGame && (
+          <div className="flex justify-between items-center">
+            <p className="text-gray-500">
+              Game from {new Date(selectedGame.date).toLocaleDateString()} - {selectedGame.courseSide === 'front9' ? 'Front 9' : 'Back 9'}
+            </p>
+            <Link to={`/games/${selectedGame.id}`}>
+              <Button variant="outline" size="sm">
+                <Medal className="mr-2 h-4 w-4" />
+                View Game Details
+              </Button>
+            </Link>
+          </div>
+        )}
+        
         <LeaderboardTable 
           scores={scores}
           players={players}
           game={selectedGame}
           isLoading={isLoading}
+          renderPlayerCell={(player) => (
+            <Link to={`/players/${player.id}`} className="font-medium hover:underline flex items-center">
+              {player.name}
+              <User className="h-3.5 w-3.5 ml-2 text-gray-400" />
+            </Link>
+          )}
         />
         
         {!isLoading && (!selectedGame || sortedGames.length === 0) && (
