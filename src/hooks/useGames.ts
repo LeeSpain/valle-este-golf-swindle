@@ -4,11 +4,11 @@ import { createGame } from '@/data/mockData';
 import { toast } from '@/hooks/use-toast';
 import { useGolfStateContext } from '@/context/GolfStateContext';
 import { useContext } from 'react';
-import { NotificationsContext } from '@/context/NotificationsContext';
+import { useNotificationsContext } from '@/context/NotificationsContext';
 
 export function useGames() {
   const { games, setGames, scores } = useGolfStateContext();
-  const notifications = useContext(NotificationsContext);
+  const notifications = useNotificationsContext();
   
   // Find next game
   const getNextGame = (): Game | null => {
@@ -40,7 +40,7 @@ export function useGames() {
     
     // Notify about the upcoming game
     if (notifications) {
-      notifications.notifyUpcomingGame(newGame.date, newGame.teeTime);
+      notifications.notifyUpcomingGame(newGame.date.toString(), newGame.teeTime);
     }
     
     return newGame;
@@ -67,7 +67,7 @@ export function useGames() {
     if (notifications && updatedGame && gameBeforeUpdate) {
       if (data.date !== gameBeforeUpdate.date || data.teeTime !== gameBeforeUpdate.teeTime) {
         notifications.notifyUpcomingGame(
-          updatedGame.date, 
+          updatedGame.date.toString(), 
           updatedGame.teeTime
         );
       }

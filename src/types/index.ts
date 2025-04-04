@@ -46,15 +46,17 @@ export interface CourseData {
   back9: HoleInfo[];
 }
 
+export interface HoleScore {
+  holeNumber: number;
+  strokes: number;
+  stablefordPoints: number;
+}
+
 export interface Score {
   id: string;
   gameId: string;
   playerId: string;
-  holes: {
-    holeNumber: number;
-    strokes: number;
-    stablefordPoints: number;
-  }[];
+  holes: HoleScore[];
   totalStrokes: number;
   totalNetStrokes: number;
   totalStablefordPoints: number;

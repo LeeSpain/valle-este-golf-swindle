@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import GameList from '@/components/Admin/GameList';
 import GameForm from '@/components/Admin/GameForm';
 import ScoreEntry from '@/components/Admin/ScoreEntry';
 import { useGolfState } from '@/hooks/useGolfState';
-import { Game, Score } from '@/types';
+import { Game, Score, HoleScore } from '@/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { valleDelEsteCourse } from '@/data/courseData';
 
@@ -55,7 +56,19 @@ const Games = () => {
   };
   
   const handleSaveScore = (scoreData: Partial<Score>) => {
-    saveScore(scoreData);
+    if (scoreData.gameId && scoreData.playerId && scoreData.holes && 
+        typeof scoreData.totalStrokes === 'number' && 
+        typeof scoreData.totalNetStrokes === 'number' && 
+        typeof scoreData.totalStablefordPoints === 'number') {
+      saveScore(
+        scoreData.gameId,
+        scoreData.playerId,
+        scoreData.holes as HoleScore[],
+        scoreData.totalStrokes,
+        scoreData.totalNetStrokes,
+        scoreData.totalStablefordPoints
+      );
+    }
   };
   
   const handleVerifyScore = (scoreId: string) => {

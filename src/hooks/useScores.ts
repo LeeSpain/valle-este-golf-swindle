@@ -4,11 +4,11 @@ import { toast } from '@/hooks/use-toast';
 import { useGolfStateContext } from '@/context/GolfStateContext';
 import { useState, useEffect, useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { NotificationsContext } from '@/context/NotificationsContext';
+import { useNotificationsContext } from '@/context/NotificationsContext';
 
 export function useScores() {
   const { scores, setScores, players } = useGolfStateContext();
-  const notifications = useContext(NotificationsContext);
+  const notifications = useNotificationsContext();
   
   const saveScore = (
     gameId: string, 
