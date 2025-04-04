@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Flag, Users, Calendar, Award, List, LayoutDashboard, Image, Settings, HelpCircle, LogOut } from 'lucide-react';
+import { Flag, Users, Calendar, Award, List, LayoutDashboard, Image, Settings, HelpCircle, LogOut, Menu, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/hooks/useAuth';
@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState } from 'react';
 
 interface NavItemProps {
   to: string;
@@ -26,17 +27,17 @@ interface NavItemProps {
 
 const NavItem = ({ to, icon, label, isActive, isAdmin = false }: NavItemProps) => {
   return (
-    <Link to={to}>
+    <Link to={to} className="w-full">
       <Button
         variant="ghost"
         className={cn(
-          'w-full justify-start gap-2 mb-1',
-          isActive ? 'bg-golf-green text-white hover:bg-golf-green-dark' : '',
+          'w-full justify-start gap-2 mb-1.5 transition-all duration-200',
+          isActive ? 'bg-golf-green text-white hover:bg-golf-green-dark' : 'hover:bg-golf-green/10',
           isAdmin ? 'border-l-4 border-sand-beige' : ''
         )}
       >
         {icon}
-        <span>{label}</span>
+        <span className="font-medium">{label}</span>
       </Button>
     </Link>
   );
@@ -50,10 +51,15 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
   
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-golf-green text-white p-4 shadow-md">
+    <div className="min-h-screen flex flex-col">
+      <header className="bg-golf-green text-white p-4 shadow-lg sticky top-0 z-50">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <Flag className="h-6 w-6" />
@@ -62,18 +68,18 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
           <div className="flex items-center gap-3">
             {isAdmin ? (
               <Link to="/admin/settings">
-                <Button variant="outline" size="sm" className="bg-transparent border-white text-white hover:bg-white hover:text-golf-green">
+                <Button variant="outline" size="sm" className="bg-transparent border-white text-white hover:bg-white hover:text-golf-green hidden md:flex">
                   <Settings className="h-4 w-4 mr-1" />
                   Settings
                 </Button>
               </Link>
             ) : null}
             {isAdmin ? (
-              <span className="bg-sand-beige text-golf-green px-2 py-1 rounded-full text-sm font-semibold">
+              <span className="bg-sand-beige text-golf-green px-2 py-1 rounded-full text-sm font-semibold shadow-sm hidden md:inline-block">
                 Admin
               </span>
             ) : (
-              <Link to="/admin">
+              <Link to="/admin" className="hidden md:block">
                 <Button variant="outline" size="sm" className="bg-transparent border-white text-white hover:bg-white hover:text-golf-green">
                   <Settings className="h-4 w-4 mr-1" />
                   Admin
@@ -84,18 +90,23 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             {user && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="p-1 rounded-full" size="sm">
-                    <Avatar className="h-8 w-8">
+                  <Button variant="ghost" className="p-1 rounded-full hover:bg-white/20" size="sm">
+                    <Avatar className="h-8 w-8 border-2 border-white/30">
                       <AvatarImage src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.email)}&background=random`} />
-                      <AvatarFallback>{user.email.charAt(0).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="bg-golf-green-dark text-white">{user.email.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuContent className="w-56 mt-1" align="end">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.email}</p>
+                      <p className="text-xs leading-none text-muted-foreground capitalize">{user.role}</p>
+                    </div>
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={logout}>
+                    <DropdownMenuItem onClick={logout} className="text-red-600 cursor-pointer">
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Log out</span>
                     </DropdownMenuItem>
@@ -103,13 +114,34 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden text-white hover:bg-white/20"
+              onClick={toggleMobileMenu}
+            >
+              {mobileMenuOpen ? <X /> : <Menu />}
+            </Button>
           </div>
         </div>
       </header>
       
       <div className="flex flex-1 container mx-auto mt-4 px-4 md:px-0">
-        <aside className="hidden md:block w-64 mr-8">
-          <nav className="space-y-1">
+        <aside className={`${mobileMenuOpen ? 'fixed inset-0 z-40 bg-black/50 backdrop-blur-sm' : 'hidden'} md:block md:static md:bg-transparent md:w-64 md:mr-8`}>
+          <nav className={`${mobileMenuOpen ? 'h-full w-3/4 max-w-xs bg-white dark:bg-gray-800 p-4 shadow-2xl animate-slide-in' : 'space-y-1'} md:h-auto md:w-auto md:bg-transparent md:shadow-none md:p-0`}>
+            <div className="md:hidden flex justify-between items-center mb-6">
+              <span className="font-bold text-lg text-golf-green">Menu</span>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-gray-500"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            
             <NavItem 
               to="/" 
               icon={<Calendar className="h-5 w-5" />} 
@@ -181,40 +213,44 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
           </nav>
         </aside>
         
-        <main className="flex-1">
-          {children}
+        <main className="flex-1 pb-20 md:pb-0">
+          <div className="animate-fade-in">{children}</div>
         </main>
       </div>
       
-      <footer className="bg-golf-green-dark text-white p-4 mt-8">
-        <div className="container mx-auto text-center text-sm">
-          <p>&copy; 2025 Karen's Bar Golf Swindle. All rights reserved.</p>
+      <footer className="bg-golf-green-dark text-white py-6 mt-8">
+        <div className="container mx-auto text-center">
+          <div className="flex justify-center items-center space-x-2 mb-4">
+            <Flag className="h-5 w-5" />
+            <span className="font-semibold">Karen's Bar Golf Swindle</span>
+          </div>
+          <p className="text-sm opacity-80">&copy; 2025 Karen's Bar Golf Swindle. All rights reserved.</p>
         </div>
       </footer>
       
       {/* Mobile bottom navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-30">
         <div className="flex justify-around p-2">
           <Link to="/" className="flex flex-col items-center p-2">
             <Calendar className={`h-6 w-6 ${location.pathname === '/' ? 'text-golf-green' : 'text-gray-500'}`} />
-            <span className="text-xs">Home</span>
+            <span className="text-xs mt-1">Home</span>
           </Link>
           <Link to="/leaderboard" className="flex flex-col items-center p-2">
             <Award className={`h-6 w-6 ${location.pathname === '/leaderboard' ? 'text-golf-green' : 'text-gray-500'}`} />
-            <span className="text-xs">Leaderboard</span>
+            <span className="text-xs mt-1">Leaderboard</span>
           </Link>
           <Link to="/photos" className="flex flex-col items-center p-2">
             <Image className={`h-6 w-6 ${location.pathname === '/photos' ? 'text-golf-green' : 'text-gray-500'}`} />
-            <span className="text-xs">Photos</span>
+            <span className="text-xs mt-1">Photos</span>
           </Link>
           <Link to="/help" className="flex flex-col items-center p-2">
             <HelpCircle className={`h-6 w-6 ${location.pathname === '/help' ? 'text-golf-green' : 'text-gray-500'}`} />
-            <span className="text-xs">Help</span>
+            <span className="text-xs mt-1">Help</span>
           </Link>
           {isAdmin && (
             <Link to="/admin" className="flex flex-col items-center p-2">
               <LayoutDashboard className={`h-6 w-6 ${location.pathname.startsWith('/admin') ? 'text-golf-green' : 'text-gray-500'}`} />
-              <span className="text-xs">Admin</span>
+              <span className="text-xs mt-1">Admin</span>
             </Link>
           )}
         </div>

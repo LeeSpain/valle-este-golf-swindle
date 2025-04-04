@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import GameList from '@/components/Admin/GameList';
@@ -7,6 +8,8 @@ import { useGolfState } from '@/hooks/useGolfState';
 import { Game, Score } from '@/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { valleDelEsteCourse } from '@/data/courseData';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar, ClipboardList } from 'lucide-react';
 
 const Games = () => {
   const { games, players, scores, isLoading, addGame, updateGame, deleteGame, saveScore, verifyScore } = useGolfState();
@@ -82,45 +85,96 @@ const Games = () => {
     setScoreEntry(null);
   };
 
+  const pageTitle = () => {
+    if (scoreEntry) return 'Score Entry';
+    if (showForm) return editingGame ? 'Edit Game' : 'Schedule New Game';
+    return 'Game Management';
+  };
+  
+  const pageDescription = () => {
+    if (scoreEntry) return `Enter scores for ${new Date(scoreEntry.date).toLocaleDateString()}`;
+    if (showForm) return editingGame ? 'Update game details' : 'Schedule a new game';
+    return 'View and manage all scheduled games';
+  };
+
   return (
     <Layout isAdmin>
       <div className="space-y-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-golf-green to-golf-green-light">
+            {pageTitle()}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {pageDescription()}
+          </p>
+        </div>
+        
         {!showForm && !scoreEntry && (
-          <GameList 
-            games={games}
-            players={players}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onAddNew={handleAddNew}
-            onManageScores={handleManageScores}
-            isLoading={isLoading}
-          />
+          <Card className="border-none shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-golf-green-light/10 to-transparent pb-2">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Calendar className="h-5 w-5 text-golf-green" />
+                <span>Game Schedule</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <GameList 
+                games={games}
+                players={players}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onAddNew={handleAddNew}
+                onManageScores={handleManageScores}
+                isLoading={isLoading}
+              />
+            </CardContent>
+          </Card>
         )}
         
         {showForm && (
-          <GameForm 
-            game={editingGame || {}}
-            players={players}
-            isEditing={!!editingGame}
-            onSubmit={handleFormSubmit}
-            onCancel={handleCancel}
-          />
+          <Card className="border-none shadow-lg animate-fade-in">
+            <CardHeader className="bg-gradient-to-r from-golf-green-light/10 to-transparent pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Calendar className="h-5 w-5 text-golf-green" />
+                <span>{editingGame ? 'Edit Game Details' : 'Schedule New Game'}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GameForm 
+                game={editingGame || {}}
+                players={players}
+                isEditing={!!editingGame}
+                onSubmit={handleFormSubmit}
+                onCancel={handleCancel}
+              />
+            </CardContent>
+          </Card>
         )}
         
         {scoreEntry && (
-          <ScoreEntry 
-            game={scoreEntry}
-            players={players}
-            scores={scores.filter(s => s.gameId === scoreEntry.id)}
-            courseData={valleDelEsteCourse}
-            onSaveScore={handleSaveScore}
-            onVerifyScore={handleVerifyScore}
-            onCancel={handleScoreEntryCancel}
-          />
+          <Card className="border-none shadow-lg animate-fade-in">
+            <CardHeader className="bg-gradient-to-r from-golf-green-light/10 to-transparent pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <ClipboardList className="h-5 w-5 text-golf-green" />
+                <span>Score Entry for {new Date(scoreEntry.date).toLocaleDateString()}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScoreEntry 
+                game={scoreEntry}
+                players={players}
+                scores={scores.filter(s => s.gameId === scoreEntry.id)}
+                courseData={valleDelEsteCourse}
+                onSaveScore={handleSaveScore}
+                onVerifyScore={handleVerifyScore}
+                onCancel={handleScoreEntryCancel}
+              />
+            </CardContent>
+          </Card>
         )}
         
         <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-          <AlertDialogContent>
+          <AlertDialogContent className="border-none">
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>

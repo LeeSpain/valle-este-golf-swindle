@@ -1,19 +1,24 @@
+
+/* Base Styles */
 #root {
-  max-width: 1280px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
+/* Logo Animations */
 .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
-  transition: filter 300ms;
+  transition: filter 300ms, transform 300ms;
 }
+
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em #2A5E36aa);
+  transform: scale(1.05);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -33,10 +38,57 @@
   }
 }
 
+/* Card Components */
 .card {
   padding: 2em;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
 .read-the-docs {
   color: #888;
+  font-size: 0.875rem;
+  margin-top: 2rem;
+  padding: 1rem;
+  border-top: 1px solid #eaeaea;
+}
+
+/* Golf-specific styling */
+.golf-bg-pattern {
+  background-color: #f8f9fa;
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%232a5e36' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Button hover effects */
+button.golf-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+button.golf-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.5s, height 0.5s;
+}
+
+button.golf-btn:hover::after {
+  width: 300%;
+  height: 300%;
 }

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import PlayerList from '@/components/Admin/PlayerList';
@@ -5,6 +6,8 @@ import PlayerForm from '@/components/Admin/PlayerForm';
 import { useGolfState } from '@/hooks/useGolfState';
 import { Player } from '@/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users } from 'lucide-react';
 
 const Players = () => {
   const { players, isLoading, addPlayer, updatePlayer, deletePlayer } = useGolfState();
@@ -49,25 +52,56 @@ const Players = () => {
   return (
     <Layout isAdmin>
       <div className="space-y-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-golf-green to-golf-green-light">
+            {showForm ? (editingPlayer ? 'Edit Player' : 'Add New Player') : 'Player Management'}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {showForm 
+              ? 'Update player information' 
+              : 'View and manage all registered players in the swindle'}
+          </p>
+        </div>
+        
         {!showForm ? (
-          <PlayerList 
-            players={players}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onAddNew={handleAddNew}
-            isLoading={isLoading}
-          />
+          <Card className="border-none shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-golf-green-light/10 to-transparent pb-2">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Users className="h-5 w-5 text-golf-green" />
+                <span>Player Roster</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <PlayerList 
+                players={players}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onAddNew={handleAddNew}
+                isLoading={isLoading}
+              />
+            </CardContent>
+          </Card>
         ) : (
-          <PlayerForm 
-            player={editingPlayer || {}}
-            isEditing={!!editingPlayer}
-            onSubmit={handleFormSubmit}
-            onCancel={handleCancel}
-          />
+          <Card className="border-none shadow-lg animate-fade-in">
+            <CardHeader className="bg-gradient-to-r from-golf-green-light/10 to-transparent pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Users className="h-5 w-5 text-golf-green" />
+                <span>{editingPlayer ? 'Edit Player Details' : 'Add New Player'}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PlayerForm 
+                player={editingPlayer || {}}
+                isEditing={!!editingPlayer}
+                onSubmit={handleFormSubmit}
+                onCancel={handleCancel}
+              />
+            </CardContent>
+          </Card>
         )}
         
         <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-          <AlertDialogContent>
+          <AlertDialogContent className="border-none">
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>

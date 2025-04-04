@@ -105,11 +105,61 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					from: {
+						opacity: '0'
+					},
+					to: {
+						opacity: '1'
+					}
+				},
+				'slide-up': {
+					from: {
+						transform: 'translateY(10px)',
+						opacity: '0'
+					},
+					to: {
+						transform: 'translateY(0)',
+						opacity: '1'
+					}
+				},
+				'slide-down': {
+					from: {
+						transform: 'translateY(-10px)',
+						opacity: '0'
+					},
+					to: {
+						transform: 'translateY(0)',
+						opacity: '1'
+					}
+				},
+				'pulse-soft': {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.7'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out',
+				'slide-up': 'slide-up 0.4s ease-out',
+				'slide-down': 'slide-down 0.4s ease-out',
+				'pulse-soft': 'pulse-soft 2s ease-in-out infinite'
+			},
+			boxShadow: {
+				'soft': '0 2px 10px rgba(0, 0, 0, 0.05)',
+				'card': '0 4px 20px rgba(0, 0, 0, 0.08)',
+				'elevation': '0 8px 30px rgba(0, 0, 0, 0.12)',
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'golf-gradient': 'linear-gradient(to right, #2A5E36, #4D8359)',
+				'sand-gradient': 'linear-gradient(to right, #E8D4A9, #F5E9D0)',
 			}
 		}
 	},
