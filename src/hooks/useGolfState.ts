@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Player, Game, Score, WeatherData } from '@/types';
+import { Player, Game, Score, WeatherData, PhotoItem } from '@/types';
 import { mockPlayers, mockGames, mockScores, mockWeather, createPlayer, createGame, createOrUpdateScore } from '@/data/mockData';
 import { toast } from '@/hooks/use-toast';
 
@@ -10,6 +9,7 @@ export function useGolfState() {
   const [games, setGames] = useState<Game[]>([]);
   const [scores, setScores] = useState<Score[]>([]);
   const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Load initial data
@@ -22,6 +22,8 @@ export function useGolfState() {
       setGames(mockGames);
       setScores(mockScores);
       setWeather(mockWeather);
+      // Initialize with empty photos array
+      setPhotos([]);
       setIsLoading(false);
     };
     
@@ -272,11 +274,44 @@ export function useGolfState() {
     }
   };
   
+  // Photo operations
+  const addPhoto = (photoData: Partial<PhotoItem>) => {
+    const newPhoto: PhotoItem = {
+      id: photoData.id || uuidv4(),
+      gameId: photoData.gameId || '',
+      url: photoData.url || '',
+      caption: photoData.caption,
+      uploadedBy: photoData.uploadedBy || '',
+      createdAt: photoData.createdAt || new Date()
+    };
+    
+    setPhotos(prev => [...prev, newPhoto]);
+    
+    toast({
+      title: "Photo Uploaded",
+      description: "Your photo has been added to the wall!"
+    });
+    
+    return newPhoto;
+  };
+  
+  const deletePhoto = (photoId: string) => {
+    setPhotos(prev => prev.filter(photo => photo.id !== photoId));
+    
+    toast({
+      title: "Photo Deleted",
+      description: "The photo has been removed from the wall."
+    });
+    
+    return true;
+  };
+  
   return {
     players,
     games,
     scores,
     weather,
+    photos,
     isLoading,
     getNextGame,
     getLatestCompletedGame,
@@ -287,6 +322,8 @@ export function useGolfState() {
     updateGame,
     deleteGame,
     saveScore,
-    verifyScore
+    verifyScore,
+    addPhoto,
+    deletePhoto
   };
 }
