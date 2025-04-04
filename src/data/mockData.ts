@@ -1,5 +1,4 @@
-
-import { Player, Game, Score, WeatherData } from '@/types';
+import { Player, Game, Score, WeatherData, PhotoItem } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
 // Generate some mock data for our application
@@ -296,6 +295,17 @@ export const mockWeather: WeatherData = {
   iconUrl: 'https://openweathermap.org/img/wn/01d@2x.png',
   windSpeed: 8
 };
+
+export const mockPhotos: PhotoItem[] = [
+  {
+    id: 'ph1',
+    url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa',
+    caption: 'Beautiful day at the course',
+    uploadedBy: 'p1',
+    gameId: 'g1',
+    createdAt: new Date()
+  }
+];
 
 // Helper function to create a new player
 export const createPlayer = (data: Partial<Player>): Player => {
