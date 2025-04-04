@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import GameList from '@/components/Admin/GameList';
 import GameForm from '@/components/Admin/GameForm';
 import ScoreEntry from '@/components/Admin/ScoreEntry';
 import { useGolfState } from '@/hooks/useGolfState';
-import { Game } from '@/types';
+import { Game, Score } from '@/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { valleDelEsteCourse } from '@/data/courseData';
 
@@ -15,6 +14,7 @@ const Games = () => {
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [scoreEntry, setScoreEntry] = useState<Game | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  
   
   const handleAddNew = () => {
     setEditingGame(null);

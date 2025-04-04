@@ -25,9 +25,17 @@ const GameForm: React.FC<GameFormProps> = ({
   onSubmit, 
   onCancel 
 }) => {
+  // Convert Date objects to string format for form inputs
+  const formatDateToString = (date: Date | string | undefined): string => {
+    if (!date) return new Date().toISOString().split('T')[0];
+    if (typeof date === 'string') return date;
+    return date.toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState<Partial<Game>>({
     ...game,
-    date: game.date ? new Date(game.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    // Store date as a string for the input field, it will be converted back to Date on submit
+    date: formatDateToString(game.date),
     players: game.players || [],
   });
   
@@ -70,7 +78,7 @@ const GameForm: React.FC<GameFormProps> = ({
     // Convert date string back to Date object
     const processedData = {
       ...formData,
-      date: formData.date ? new Date(formData.date) : new Date(),
+      date: formData.date ? new Date(formData.date as string) : new Date(),
     };
     
     onSubmit(processedData);
