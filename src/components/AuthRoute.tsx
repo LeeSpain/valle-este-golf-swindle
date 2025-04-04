@@ -4,6 +4,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 interface AuthRouteProps {
   children: ReactNode;
@@ -16,7 +17,22 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   const [showingContent, setShowingContent] = useState(false);
   const [forceRender, setForceRender] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [renderCount, setRenderCount] = useState(0);
 
+  // Log each render of this component to diagnose issues
+  useEffect(() => {
+    console.log(`AuthRoute render #${renderCount + 1}`, { 
+      user: user?.email, 
+      isLoading, 
+      path: location.pathname,
+      requireAdmin,
+      showingContent,
+      forceRender,
+      authError
+    });
+    setRenderCount(prev => prev + 1);
+  });
+  
   useEffect(() => {
     console.log("AuthRoute mounted", { 
       user: user?.email, 
@@ -37,9 +53,21 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
       console.log("Force re-render triggered in AuthRoute");
     }, 800);
     
+    // Super fallback timer - if nothing else works, try to refresh the page
+    const emergencyTimer = setTimeout(() => {
+      if (!showingContent && !forceRender) {
+        console.log("Emergency timeout - trying to reload the app");
+        // Instead of refreshing automatically which can lead to loops,
+        // we'll show a message allowing the user to refresh
+        setAuthError("Application seems to be stuck. You may need to refresh the page.");
+        setShowingContent(true);
+      }
+    }, 5000);
+    
     return () => {
       clearTimeout(timer);
       clearTimeout(renderTimer);
+      clearTimeout(emergencyTimer);
       console.log("AuthRoute unmounted");
     };
   }, [user, isLoading, location.pathname]);
@@ -58,9 +86,11 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
     }
   }, [user, requireAdmin]);
 
-  // Always allow access in development mode or if forcing render
-  if (process.env.NODE_ENV === 'development' || forceRender) {
-    console.log(`${process.env.NODE_ENV === 'development' ? "Development mode" : "Force render"}: bypassing authentication checks`);
+  // Always allow access in development mode, if forcing render, or after a certain time
+  const bypassAuth = process.env.NODE_ENV === 'development' || forceRender || showingContent;
+  
+  if (bypassAuth) {
+    console.log(`${process.env.NODE_ENV === 'development' ? "Development mode" : forceRender ? "Force render" : "Timeout"}: bypassing strict authentication checks`);
     
     // Still show error for admin routes if we have the user but they're not admin
     if (requireAdmin && user && user.role !== 'admin' && !forceRender) {
@@ -81,7 +111,21 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
       );
     }
     
-    return <>{children}</>;
+    // Wrap the content in an additional error boundary
+    return (
+      <ErrorBoundary>
+        <div data-testid="auth-route-content">
+          {authError ? (
+            <Alert variant="destructive" className="my-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Authentication Issue</AlertTitle>
+              <AlertDescription>{authError}</AlertDescription>
+            </Alert>
+          ) : null}
+          {children}
+        </div>
+      </ErrorBoundary>
+    );
   }
 
   // Show loading state briefly
@@ -122,7 +166,13 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   }
 
   console.log("AuthRoute rendering children");
-  return <>{children}</>;
+  return (
+    <ErrorBoundary>
+      <div data-testid="auth-route-content">
+        {children}
+      </div>
+    </ErrorBoundary>
+  );
 };
 
 export default AuthRoute;
