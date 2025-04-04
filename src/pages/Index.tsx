@@ -4,13 +4,14 @@ import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useGolfState } from '@/hooks/useGolfState';
-import { Calendar, GolfBall, Trophy, Users, Clock, Flag, SunIcon, CloudRain } from 'lucide-react';
+import { Calendar, Trophy, Users, Clock, Flag, SunIcon, CloudRain, ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import NextGame from '@/components/Dashboard/NextGame';
 import PlayerStats from '@/components/Dashboard/PlayerStats';
 import Weather from '@/components/Dashboard/Weather';
 
-const GolfBall = (props: any) => {
+// Custom GolfBall icon since it's not in lucide-react
+const GolfBall = (props: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       {...props}
@@ -38,8 +39,11 @@ const GolfBall = (props: any) => {
 };
 
 const Index = () => {
-  const { players, games, getNextGame, weather } = useGolfState();
+  const { players, games, getNextGame, weather, scores } = useGolfState();
   const nextGame = getNextGame();
+  
+  // Add current player (first player for demonstration)
+  const currentPlayer = players.length > 0 ? players[0] : null;
   
   return (
     <Layout>
@@ -69,7 +73,11 @@ const Index = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <NextGame />
+              <NextGame 
+                game={nextGame} 
+                players={players} 
+                isLoading={false} 
+              />
             </CardContent>
             <CardFooter>
               {nextGame && (
@@ -86,7 +94,7 @@ const Index = () => {
           <Card className="shadow-md hover:shadow-lg transition-shadow border-none glass-card">
             <CardHeader className="pb-2 bg-gradient-to-r from-golf-green-light/10 to-transparent rounded-t-lg">
               <CardTitle className="flex items-center gap-2">
-                {weather?.conditions?.includes('rain') ? (
+                {weather?.condition?.includes('rain') ? (
                   <CloudRain className="h-5 w-5 text-golf-green" />
                 ) : (
                   <SunIcon className="h-5 w-5 text-golf-green" />
@@ -98,7 +106,10 @@ const Index = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <Weather />
+              <Weather 
+                weatherData={weather} 
+                isLoading={false} 
+              />
             </CardContent>
           </Card>
         </div>
@@ -163,7 +174,11 @@ const Index = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
-            <PlayerStats />
+            <PlayerStats 
+              player={currentPlayer} 
+              scores={scores} 
+              isLoading={false} 
+            />
           </CardContent>
           <CardFooter>
             <Button asChild variant="outline">
@@ -196,7 +211,7 @@ const Index = () => {
           <Card className="shadow-md hover:shadow-lg transition-shadow border-gray-100">
             <CardHeader className="bg-gradient-to-r from-golf-green-light/10 to-transparent">
               <CardTitle className="flex items-center gap-2">
-                <Image className="h-5 w-5 text-golf-green" />
+                <ImageIcon className="h-5 w-5 text-golf-green" />
                 <span>Photo Gallery</span>
               </CardTitle>
               <CardDescription>
