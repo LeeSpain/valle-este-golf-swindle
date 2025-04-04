@@ -1,5 +1,5 @@
 
-import React, { ReactNode, useState, useEffect } from 'react';
+import React, { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -14,53 +14,18 @@ interface AuthRouteProps {
 const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false }) => {
   const { user, isLoading, authInitialized } = useAuth();
   const location = useLocation();
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [renderCount, setRenderCount] = useState(0);
-
-  // Log each render of this component to diagnose issues
-  useEffect(() => {
-    console.log(`AuthRoute render #${renderCount + 1}`, { 
-      user: user?.email, 
-      isLoading, 
-      path: location.pathname,
-      requireAdmin,
-      authInitialized,
-      authError
-    });
-    setRenderCount(prev => prev + 1);
+  
+  // Log auth state on render for debugging
+  console.log("AuthRoute rendering:", { 
+    user: user?.email || "none", 
+    authInitialized, 
+    isLoading,
+    path: location.pathname
   });
   
-  useEffect(() => {
-    console.log("AuthRoute mounted", { 
-      user: user?.email, 
-      isLoading, 
-      path: location.pathname,
-      requireAdmin,
-      authInitialized
-    });
-    
-    return () => {
-      console.log("AuthRoute unmounted");
-    };
-  }, [user, isLoading, location.pathname, requireAdmin, authInitialized]);
-
-  // Handle errors that might occur during auth checking
-  useEffect(() => {
-    try {
-      if (requireAdmin && user && user.role !== 'admin') {
-        setAuthError("You don't have permission to access this page. Admin privileges required.");
-      } else {
-        setAuthError(null);
-      }
-    } catch (err) {
-      console.error("Error in AuthRoute permission checking:", err);
-      setAuthError("Authentication error occurred. Please try refreshing.");
-    }
-  }, [user, requireAdmin]);
-
-  // Show loading state if auth isn't initialized yet
+  // Show loading state if auth is still initializing
   if (isLoading || !authInitialized) {
-    console.log("AuthRoute showing loading state", { isLoading, authInitialized });
+    console.log("AuthRoute: Still loading auth state");
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
@@ -70,32 +35,31 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
       </div>
     );
   }
-
-  // Show auth error if any
-  if (authError) {
+  
+  // Check if user is logged in
+  if (!user) {
+    console.log("AuthRoute: User not authenticated, redirecting to login");
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
+  // Check if admin access is required
+  if (requireAdmin && user.role !== 'admin') {
+    console.log("AuthRoute: User doesn't have admin privileges");
     return (
       <div className="p-8 max-w-3xl mx-auto">
-        <Alert variant="destructive" className="my-4">
+        <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Authentication Error</AlertTitle>
-          <AlertDescription>{authError}</AlertDescription>
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>
+            You don't have permission to access this page. Admin privileges required.
+          </AlertDescription>
         </Alert>
       </div>
     );
   }
-
-  // Proper auth checks
-  if (!user) {
-    console.log("User not authenticated, redirecting to login");
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  if (requireAdmin && user.role !== 'admin') {
-    console.log("User doesn't have admin privileges, redirecting to home");
-    return <Navigate to="/" replace />;
-  }
-
-  console.log("AuthRoute rendering children - user authenticated properly");
+  
+  // User is authenticated properly, render the children
+  console.log("AuthRoute: Authentication successful, rendering children");
   return (
     <ErrorBoundary>
       <div data-testid="auth-route-content">

@@ -6,36 +6,45 @@ import { toast } from '@/hooks/use-toast';
 import { User } from '@/types';
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(getCurrentUser());
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
   const navigate = useNavigate();
   
+  // Run once on mount to initialize auth state
   useEffect(() => {
-    console.log("useAuth hook initialized with user:", user);
+    console.log("Auth hook initializing...");
     
-    // Check if we have a user in localStorage that isn't in state
-    const storedUser = getCurrentUser();
-    if (!user && storedUser) {
-      console.log("Restoring user from localStorage:", storedUser);
+    try {
+      // Get user from localStorage on initial load
+      const storedUser = getCurrentUser();
+      console.log("User from localStorage:", storedUser);
+      
+      // Set user state from localStorage
       setUser(storedUser);
-    }
-    
-    // Mark auth as initialized after the initial check
-    if (!authInitialized) {
+      
+      // Always mark initialization as complete
       setAuthInitialized(true);
-      console.log("Auth initialization complete");
+      setIsLoading(false);
+      
+      console.log("Auth initialization complete, user:", storedUser?.email || "none");
+    } catch (error) {
+      console.error("Error during auth initialization:", error);
+      setAuthInitialized(true);
+      setIsLoading(false);
     }
-  }, [user, authInitialized]);
+  }, []);
   
   const login = async (email: string, password: string) => {
     console.log("Login attempt for:", email);
     setIsLoading(true);
+    
     try {
       const response = await apiLogin({ email, password });
-      setUser(response.user);
-      
       console.log("Login successful for:", response.user.email);
+      
+      // Update user state
+      setUser(response.user);
       
       toast({
         title: "Login Successful",
