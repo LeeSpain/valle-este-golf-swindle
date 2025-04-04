@@ -21,6 +21,7 @@ import Games from "./pages/admin/Games";
 import Scores from "./pages/admin/Scores";
 import AdminSettings from "./pages/admin/Settings";
 import NotFound from "./pages/NotFound";
+import './App.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,6 +32,9 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// For development: Add this console.log to help debug app initialization
+console.log('App initializing...');
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -44,19 +48,96 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               
               {/* Protected Routes */}
-              <Route path="/" element={<AuthRoute><Index /></AuthRoute>} />
-              <Route path="/leaderboard" element={<AuthRoute><Leaderboard /></AuthRoute>} />
-              <Route path="/photos" element={<AuthRoute><Photos /></AuthRoute>} />
-              <Route path="/help" element={<AuthRoute><Help /></AuthRoute>} />
-              <Route path="/players/:playerId" element={<AuthRoute><PlayerProfile /></AuthRoute>} />
-              <Route path="/games/:gameId" element={<AuthRoute><GameDetails /></AuthRoute>} />
+              <Route 
+                path="/" 
+                element={
+                  <AuthRoute>
+                    <Index />
+                  </AuthRoute>
+                } 
+              />
+              <Route 
+                path="/leaderboard" 
+                element={
+                  <AuthRoute>
+                    <Leaderboard />
+                  </AuthRoute>
+                } 
+              />
+              <Route 
+                path="/photos" 
+                element={
+                  <AuthRoute>
+                    <Photos />
+                  </AuthRoute>
+                } 
+              />
+              <Route 
+                path="/help" 
+                element={
+                  <AuthRoute>
+                    <Help />
+                  </AuthRoute>
+                } 
+              />
+              <Route 
+                path="/players/:playerId" 
+                element={
+                  <AuthRoute>
+                    <PlayerProfile />
+                  </AuthRoute>
+                } 
+              />
+              <Route 
+                path="/games/:gameId" 
+                element={
+                  <AuthRoute>
+                    <GameDetails />
+                  </AuthRoute>
+                } 
+              />
               
               {/* Admin Routes */}
-              <Route path="/admin" element={<AuthRoute requireAdmin><AdminDashboard /></AuthRoute>} />
-              <Route path="/admin/players" element={<AuthRoute requireAdmin><Players /></AuthRoute>} />
-              <Route path="/admin/games" element={<AuthRoute requireAdmin><Games /></AuthRoute>} />
-              <Route path="/admin/scores" element={<AuthRoute requireAdmin><Scores /></AuthRoute>} />
-              <Route path="/admin/settings" element={<AuthRoute requireAdmin><AdminSettings /></AuthRoute>} />
+              <Route 
+                path="/admin" 
+                element={
+                  <AuthRoute requireAdmin>
+                    <AdminDashboard />
+                  </AuthRoute>
+                } 
+              />
+              <Route 
+                path="/admin/players" 
+                element={
+                  <AuthRoute requireAdmin>
+                    <Players />
+                  </AuthRoute>
+                } 
+              />
+              <Route 
+                path="/admin/games" 
+                element={
+                  <AuthRoute requireAdmin>
+                    <Games />
+                  </AuthRoute>
+                } 
+              />
+              <Route 
+                path="/admin/scores" 
+                element={
+                  <AuthRoute requireAdmin>
+                    <Scores />
+                  </AuthRoute>
+                } 
+              />
+              <Route 
+                path="/admin/settings" 
+                element={
+                  <AuthRoute requireAdmin>
+                    <AdminSettings />
+                  </AuthRoute>
+                } 
+              />
               
               <Route path="*" element={<NotFound />} />
             </Routes>

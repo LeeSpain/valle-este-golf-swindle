@@ -92,3 +92,48 @@ button.golf-btn:hover::after {
   width: 300%;
   height: 300%;
 }
+
+/* Glass card effect for cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Add debug styles to easily identify container issues */
+.debug-layout {
+  border: 2px dashed red;
+}
+
+.debug-container {
+  border: 2px dashed blue;
+}
+
+.debug-component {
+  border: 2px dashed green;
+}
+
+/* Animations for content appearance */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.4s ease-out forwards;
+}

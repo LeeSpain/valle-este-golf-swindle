@@ -4,11 +4,12 @@ import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useGolfState } from '@/hooks/useGolfState';
-import { Calendar, Trophy, Users, Clock, Flag, SunIcon, CloudRain, ImageIcon } from 'lucide-react';
+import { Calendar, Trophy, Users, Clock, Flag, SunIcon, CloudRain, ImageIcon, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import NextGame from '@/components/Dashboard/NextGame';
 import PlayerStats from '@/components/Dashboard/PlayerStats';
 import Weather from '@/components/Dashboard/Weather';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Custom GolfBall icon since it's not in lucide-react
 const GolfBall = (props: React.SVGProps<SVGSVGElement>) => {
@@ -39,11 +40,30 @@ const GolfBall = (props: React.SVGProps<SVGSVGElement>) => {
 };
 
 const Index = () => {
-  const { players, games, getNextGame, weather, scores } = useGolfState();
+  const { players, games, getNextGame, weather, scores, isLoading, error } = useGolfState();
+  
+  console.log("Dashboard rendering with data:", { players, games, weather, scores, isLoading, error });
+  
   const nextGame = getNextGame();
   
   // Add current player (first player for demonstration)
-  const currentPlayer = players.length > 0 ? players[0] : null;
+  const currentPlayer = players && players.length > 0 ? players[0] : null;
+  
+  // Error handling
+  if (error && !isLoading) {
+    return (
+      <Layout>
+        <Alert variant="destructive" className="my-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            There was an error loading the dashboard data. Please try refreshing the page.
+            <pre className="mt-2 p-2 bg-red-50 text-red-900 rounded text-xs">{error}</pre>
+          </AlertDescription>
+        </Alert>
+      </Layout>
+    );
+  }
   
   return (
     <Layout>
@@ -75,8 +95,8 @@ const Index = () => {
             <CardContent className="pt-4">
               <NextGame 
                 game={nextGame} 
-                players={players} 
-                isLoading={false} 
+                players={players || []} 
+                isLoading={isLoading} 
               />
             </CardContent>
             <CardFooter>
@@ -108,7 +128,7 @@ const Index = () => {
             <CardContent className="pt-4">
               <Weather 
                 weatherData={weather} 
-                isLoading={false} 
+                isLoading={isLoading} 
               />
             </CardContent>
           </Card>
@@ -124,7 +144,7 @@ const Index = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{players.length}</div>
+              <div className="text-3xl font-bold">{players ? players.length : 0}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Active members in the group
               </p>
@@ -139,7 +159,7 @@ const Index = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{games.length}</div>
+              <div className="text-3xl font-bold">{games ? games.length : 0}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Total games scheduled
               </p>
@@ -176,8 +196,8 @@ const Index = () => {
           <CardContent className="pt-4">
             <PlayerStats 
               player={currentPlayer} 
-              scores={scores} 
-              isLoading={false} 
+              scores={scores || []} 
+              isLoading={isLoading} 
             />
           </CardContent>
           <CardFooter>

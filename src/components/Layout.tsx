@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface NavItemProps {
   to: string;
@@ -52,10 +52,24 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
+  // Ensure the component is mounted before rendering content that might depend on browser APIs
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
+  
+  if (!mounted) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-pulse">Loading...</div>
+    </div>;
+  }
+  
+  console.log("Layout rendering with user:", user);
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -87,7 +101,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
               </Link>
             )}
             
-            {user && (
+            {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="p-1 rounded-full hover:bg-white/20" size="sm">
@@ -113,6 +127,12 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
+            ) : (
+              <Link to="/login">
+                <Button variant="outline" size="sm" className="bg-transparent border-white text-white hover:bg-white hover:text-golf-green">
+                  Login
+                </Button>
+              </Link>
             )}
             
             <Button 

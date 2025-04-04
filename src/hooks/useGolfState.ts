@@ -1,49 +1,29 @@
 
-import { useGolfStateContext } from '@/context/GolfStateContext';
-import { usePlayers } from './usePlayers';
-import { useGames } from './useGames';
-import { useScores } from './useScores';
-import { usePhotos } from './usePhotos';
-import { useWeather } from './useWeather';
+import { useContext } from 'react';
+import { GolfStateContext } from '@/context/GolfStateContext';
 
-export function useGolfState() {
-  const { isLoading } = useGolfStateContext();
-  const playerHooks = usePlayers();
-  const gameHooks = useGames();
-  const scoreHooks = useScores();
-  const photoHooks = usePhotos();
-  const weatherHooks = useWeather();
+export const useGolfState = () => {
+  const context = useContext(GolfStateContext);
   
-  // Combine all the hooks into a single object
-  return {
-    // Player-related
-    players: playerHooks.players,
-    addPlayer: playerHooks.addPlayer,
-    updatePlayer: playerHooks.updatePlayer,
-    deletePlayer: playerHooks.deletePlayer,
-    
-    // Game-related
-    games: gameHooks.games,
-    getNextGame: gameHooks.getNextGame,
-    getLatestCompletedGame: gameHooks.getLatestCompletedGame,
-    addGame: gameHooks.addGame,
-    updateGame: gameHooks.updateGame,
-    deleteGame: gameHooks.deleteGame,
-    
-    // Score-related
-    scores: scoreHooks.scores,
-    saveScore: scoreHooks.saveScore,
-    verifyScore: scoreHooks.verifyScore,
-    
-    // Photo-related
-    photos: photoHooks.photos,
-    addPhoto: photoHooks.addPhoto,
-    deletePhoto: photoHooks.deletePhoto,
-    
-    // Weather-related
-    weather: weatherHooks.weather,
-    
-    // Loading state
-    isLoading
-  };
-}
+  if (!context) {
+    console.error('useGolfState must be used within a GolfStateProvider');
+    // Return default values to prevent application crashes
+    return {
+      players: [],
+      games: [],
+      scores: [],
+      photos: [],
+      weather: null,
+      isLoading: false,
+      error: 'Context not available',
+      getNextGame: () => null,
+      getPlayerById: () => null,
+      getGameById: () => null,
+      getScoresByGameId: () => [],
+      getScoresByPlayerId: () => [],
+      getPhotosByGameId: () => [],
+    };
+  }
+  
+  return context;
+};
