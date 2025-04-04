@@ -18,14 +18,21 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     // Update state so the next render will show the fallback UI
+    console.error('ErrorBoundary caught an error:', error);
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     // Log the error to the console
     console.error('Error caught by ErrorBoundary:', error);
-    console.error('Error info:', errorInfo);
+    console.error('Error info:', errorInfo.componentStack);
   }
+
+  // Method to let users try recovery
+  handleReset = () => {
+    console.log('Attempting to reset error boundary state');
+    this.setState({ hasError: false, error: null });
+  };
 
   render() {
     if (this.state.hasError) {
@@ -38,16 +45,27 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               <p className="text-red-800 font-medium">
                 {this.state.error?.message || 'An unknown error occurred'}
               </p>
+              <p className="text-red-600 text-sm mt-2">
+                {this.state.error?.stack?.split('\n')[0]}
+              </p>
             </div>
             <p className="text-gray-600 mb-6">
               Try refreshing the page. If the problem persists, please contact support.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="w-full py-2 px-4 bg-golf-green hover:bg-golf-green-dark text-white rounded-md shadow-sm transition-colors"
-            >
-              Refresh Page
-            </button>
+            <div className="flex flex-col space-y-2">
+              <button
+                onClick={() => window.location.reload()}
+                className="py-2 px-4 bg-golf-green hover:bg-golf-green-dark text-white rounded-md shadow-sm transition-colors"
+              >
+                Refresh Page
+              </button>
+              <button
+                onClick={this.handleReset}
+                className="py-2 px-4 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md shadow-sm transition-colors"
+              >
+                Try to Recover
+              </button>
+            </div>
           </div>
         </div>
       );

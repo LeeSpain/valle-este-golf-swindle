@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -34,6 +34,16 @@ const queryClient = new QueryClient({
   },
 });
 
+// Simple loading component
+const LoadingFallback = () => (
+  <div className="h-screen flex items-center justify-center">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
+      <p className="mt-4 text-golf-green">Loading application...</p>
+    </div>
+  </div>
+);
+
 const App = () => {
   const [appReady, setAppReady] = useState(false);
   
@@ -58,126 +68,122 @@ const App = () => {
     };
   }, []);
 
+  // Simple emergency rendering if something fails
   if (!appReady) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
-          <p className="mt-4 text-golf-green">Loading application...</p>
-        </div>
-      </div>
-    );
+    return <LoadingFallback />;
   }
 
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <GolfStateProvider>
-            <NotificationsProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  
-                  {/* Protected Routes with simplified auth for development */}
-                  <Route 
-                    path="/" 
-                    element={
-                      <AuthRoute>
-                        <Index />
-                      </AuthRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/leaderboard" 
-                    element={
-                      <AuthRoute>
-                        <Leaderboard />
-                      </AuthRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/photos" 
-                    element={
-                      <AuthRoute>
-                        <Photos />
-                      </AuthRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/help" 
-                    element={
-                      <AuthRoute>
-                        <Help />
-                      </AuthRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/players/:playerId" 
-                    element={
-                      <AuthRoute>
-                        <PlayerProfile />
-                      </AuthRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/games/:gameId" 
-                    element={
-                      <AuthRoute>
-                        <GameDetails />
-                      </AuthRoute>
-                    } 
-                  />
-                  
-                  {/* Admin Routes */}
-                  <Route 
-                    path="/admin" 
-                    element={
-                      <AuthRoute requireAdmin>
-                        <AdminDashboard />
-                      </AuthRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/players" 
-                    element={
-                      <AuthRoute requireAdmin>
-                        <Players />
-                      </AuthRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/games" 
-                    element={
-                      <AuthRoute requireAdmin>
-                        <Games />
-                      </AuthRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/scores" 
-                    element={
-                      <AuthRoute requireAdmin>
-                        <Scores />
-                      </AuthRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/settings" 
-                    element={
-                      <AuthRoute requireAdmin>
-                        <AdminSettings />
-                      </AuthRoute>
-                    } 
-                  />
-                  
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </NotificationsProvider>
-          </GolfStateProvider>
+          <Suspense fallback={<LoadingFallback />}>
+            <GolfStateProvider>
+              <NotificationsProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    
+                    {/* Protected Routes with simplified auth for development */}
+                    <Route 
+                      path="/" 
+                      element={
+                        <AuthRoute>
+                          <Index />
+                        </AuthRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/leaderboard" 
+                      element={
+                        <AuthRoute>
+                          <Leaderboard />
+                        </AuthRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/photos" 
+                      element={
+                        <AuthRoute>
+                          <Photos />
+                        </AuthRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/help" 
+                      element={
+                        <AuthRoute>
+                          <Help />
+                        </AuthRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/players/:playerId" 
+                      element={
+                        <AuthRoute>
+                          <PlayerProfile />
+                        </AuthRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/games/:gameId" 
+                      element={
+                        <AuthRoute>
+                          <GameDetails />
+                        </AuthRoute>
+                      } 
+                    />
+                    
+                    {/* Admin Routes */}
+                    <Route 
+                      path="/admin" 
+                      element={
+                        <AuthRoute requireAdmin>
+                          <AdminDashboard />
+                        </AuthRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/admin/players" 
+                      element={
+                        <AuthRoute requireAdmin>
+                          <Players />
+                        </AuthRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/admin/games" 
+                      element={
+                        <AuthRoute requireAdmin>
+                          <Games />
+                        </AuthRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/admin/scores" 
+                      element={
+                        <AuthRoute requireAdmin>
+                          <Scores />
+                        </AuthRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/admin/settings" 
+                      element={
+                        <AuthRoute requireAdmin>
+                          <AdminSettings />
+                        </AuthRoute>
+                      } 
+                    />
+                    
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </NotificationsProvider>
+            </GolfStateProvider>
+          </Suspense>
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>
