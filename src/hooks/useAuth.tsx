@@ -15,6 +15,9 @@ export function useAuth() {
   useEffect(() => {
     console.log("Auth hook initializing...");
     
+    // Reset loading state
+    setIsLoading(true);
+    
     try {
       // Get user from localStorage on initial load
       const storedUser = getCurrentUser();
@@ -22,16 +25,13 @@ export function useAuth() {
       
       // Set user state from localStorage
       setUser(storedUser);
-      
-      // Always mark initialization as complete
-      setAuthInitialized(true);
-      setIsLoading(false);
-      
-      console.log("Auth initialization complete, user:", storedUser?.email || "none");
     } catch (error) {
       console.error("Error during auth initialization:", error);
+    } finally {
+      // Always mark initialization as complete and loading as done
       setAuthInitialized(true);
       setIsLoading(false);
+      console.log("Auth initialization complete");
     }
   }, []);
   

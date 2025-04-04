@@ -15,36 +15,34 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   const { user, isLoading, authInitialized } = useAuth();
   const location = useLocation();
   
-  // Log auth state on render for debugging
-  console.log("AuthRoute rendering:", { 
+  // Debug logging
+  console.log("AuthRoute:", { 
     user: user?.email || "none", 
-    authInitialized, 
-    isLoading,
+    isLoading, 
+    authInitialized,
     path: location.pathname
   });
-  
-  // Show loading state if auth is still initializing
-  if (isLoading || !authInitialized) {
-    console.log("AuthRoute: Still loading auth state");
+
+  // If auth is still initializing, show a simple loading state
+  if (!authInitialized || isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
-          <p className="mt-4 text-golf-green">Verifying authentication...</p>
+          <p className="mt-4 text-golf-green">Loading...</p>
         </div>
       </div>
     );
   }
   
-  // Check if user is logged in
+  // If user is not logged in, redirect to login
   if (!user) {
-    console.log("AuthRoute: User not authenticated, redirecting to login");
+    console.log("User not authenticated, redirecting to login");
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
-  // Check if admin access is required
+  // Check admin access if required
   if (requireAdmin && user.role !== 'admin') {
-    console.log("AuthRoute: User doesn't have admin privileges");
     return (
       <div className="p-8 max-w-3xl mx-auto">
         <Alert variant="destructive">
@@ -58,8 +56,7 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
     );
   }
   
-  // User is authenticated properly, render the children
-  console.log("AuthRoute: Authentication successful, rendering children");
+  // User is authenticated, render children
   return (
     <ErrorBoundary>
       <div data-testid="auth-route-content">
