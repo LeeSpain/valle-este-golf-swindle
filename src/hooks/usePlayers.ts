@@ -7,7 +7,8 @@ import { createPlayer, updatePlayer, deletePlayer } from '@/api/playerService';
 export function usePlayers() {
   const { players, setPlayers } = useGolfStateContext();
   
-  const addPlayer = async (playerData: Omit<Player, 'id' | 'createdAt' | 'updatedAt'>) => {
+  // Updated to accept Partial<Player> instead of requiring specific fields
+  const addPlayer = async (playerData: Partial<Player>) => {
     try {
       const newPlayer = await createPlayer(playerData);
       setPlayers(prev => [...prev, newPlayer]);

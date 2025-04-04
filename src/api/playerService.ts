@@ -14,7 +14,8 @@ export async function getPlayerById(playerId: string): Promise<Player> {
   });
 }
 
-export async function createPlayer(playerData: Omit<Player, 'id' | 'createdAt' | 'updatedAt'>): Promise<Player> {
+// Updated to accept Partial<Player> instead of requiring all fields
+export async function createPlayer(playerData: Partial<Player>): Promise<Player> {
   return apiClient<Player>('/players', {
     method: 'POST',
     headers: getAuthHeaders(),

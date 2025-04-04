@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import GameList from '@/components/Admin/GameList';
 import GameForm from '@/components/Admin/GameForm';
 import ScoreEntry from '@/components/Admin/ScoreEntry';
 import { useGolfState } from '@/hooks/useGolfState';
-import { Game, Score, HoleScore } from '@/types';
+import { Game, Score } from '@/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { valleDelEsteCourse } from '@/data/courseData';
 
@@ -56,18 +55,22 @@ const Games = () => {
   };
   
   const handleSaveScore = (scoreData: Partial<Score>) => {
-    if (scoreData.gameId && scoreData.playerId && scoreData.holes && 
-        typeof scoreData.totalStrokes === 'number' && 
-        typeof scoreData.totalNetStrokes === 'number' && 
-        typeof scoreData.totalStablefordPoints === 'number') {
-      saveScore(
-        scoreData.gameId,
-        scoreData.playerId,
-        scoreData.holes as HoleScore[],
-        scoreData.totalStrokes,
-        scoreData.totalNetStrokes,
-        scoreData.totalStablefordPoints
-      );
+    // Create a complete Score object to pass to saveScore
+    if (scoreData.gameId && scoreData.playerId && scoreData.holes) {
+      const completeScore: Score = {
+        id: scoreData.id || '', // ID will be generated on the server if not provided
+        gameId: scoreData.gameId,
+        playerId: scoreData.playerId,
+        holes: scoreData.holes,
+        totalStrokes: scoreData.totalStrokes || 0,
+        totalNetStrokes: scoreData.totalNetStrokes || 0,
+        totalStablefordPoints: scoreData.totalStablefordPoints || 0,
+        isVerified: scoreData.isVerified || false,
+        createdAt: scoreData.createdAt || new Date(),
+        updatedAt: scoreData.updatedAt || new Date()
+      };
+      
+      saveScore(completeScore);
     }
   };
   

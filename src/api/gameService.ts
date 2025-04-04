@@ -14,7 +14,8 @@ export async function getGameById(gameId: string): Promise<Game> {
   });
 }
 
-export async function createGame(gameData: Omit<Game, 'id' | 'createdAt' | 'updatedAt' | 'isVerified' | 'isComplete'>): Promise<Game> {
+// Updated to accept Partial<Game> instead of requiring all fields
+export async function createGame(gameData: Partial<Game>): Promise<Game> {
   return apiClient<Game>('/games', {
     method: 'POST',
     headers: getAuthHeaders(),

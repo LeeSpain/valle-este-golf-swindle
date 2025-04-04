@@ -30,7 +30,8 @@ export function useGames() {
     return completedGames.length > 0 ? completedGames[0] : null;
   };
   
-  const addGame = async (gameData: Omit<Game, 'id' | 'createdAt' | 'updatedAt' | 'isVerified' | 'isComplete'>) => {
+  // Updated to accept Partial<Game> instead of requiring specific fields
+  const addGame = async (gameData: Partial<Game>) => {
     try {
       const newGame = await createGame(gameData);
       setGames(prev => [...prev, newGame]);
