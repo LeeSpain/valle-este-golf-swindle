@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import PlayerList from '@/components/Admin/PlayerList';
@@ -40,7 +39,15 @@ const Players = () => {
     if (editingPlayer) {
       updatePlayer(editingPlayer.id, playerData);
     } else {
-      addPlayer(playerData);
+      // Ensure all required fields are present for new players
+      const newPlayer = {
+        name: playerData.name || 'New Player',
+        email: playerData.email || 'player@example.com',
+        handicap: playerData.handicap || 0,
+        gender: playerData.gender || 'male',
+        preferredTee: playerData.preferredTee || 'yellow'
+      };
+      addPlayer(newPlayer);
     }
     setShowForm(false);
   };
@@ -49,6 +56,7 @@ const Players = () => {
     setShowForm(false);
   };
 
+  
   return (
     <Layout isAdmin>
       <div className="space-y-6">

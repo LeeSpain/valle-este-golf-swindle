@@ -3,6 +3,7 @@ import React from 'react';
 import Layout from '@/components/Layout';
 import PhotoWall from '@/components/PhotoWall/PhotoWall';
 import { useGolfState } from '@/hooks/useGolfState';
+import { usePhotos } from '@/hooks/usePhotos';
 
 const Photos = () => {
   const { 
@@ -11,6 +12,7 @@ const Photos = () => {
     photos, 
     isLoading 
   } = useGolfState();
+  const { addPhoto } = usePhotos();
 
   return (
     <Layout>
@@ -23,6 +25,7 @@ const Photos = () => {
           games={games}
           players={players}
           isLoading={isLoading}
+          onUploadPhoto={addPhoto}
         />
       </div>
     </Layout>

@@ -44,7 +44,17 @@ const Games = () => {
     if (editingGame) {
       updateGame(editingGame.id, gameData);
     } else {
-      addGame(gameData);
+      // Ensure all required fields are present for new games
+      const newGame = {
+        date: gameData.date || new Date(),
+        teeTime: gameData.teeTime || '12:00',
+        courseSide: gameData.courseSide || 'front9',
+        players: gameData.players || [],
+        isComplete: gameData.isComplete || false,
+        isVerified: gameData.isVerified || false,
+        notes: gameData.notes || ''
+      };
+      addGame(newGame);
     }
     setShowForm(false);
   };
