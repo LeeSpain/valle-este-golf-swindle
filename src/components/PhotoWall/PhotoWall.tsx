@@ -22,7 +22,7 @@ const PhotoWall: React.FC<PhotoWallProps> = ({
   onUploadPhoto,
   isLoading 
 }) => {
-  const [selectedGameId, setSelectedGameId] = useState<string>('');
+  const [selectedGameId, setSelectedGameId] = useState<string>('all');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   
   // Sort games by date (newest first)
@@ -30,9 +30,9 @@ const PhotoWall: React.FC<PhotoWallProps> = ({
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   
   // Filter photos by selected game
-  const filteredPhotos = selectedGameId 
-    ? photos.filter(photo => photo.gameId === selectedGameId)
-    : photos;
+  const filteredPhotos = selectedGameId === 'all'
+    ? photos
+    : photos.filter(photo => photo.gameId === selectedGameId);
   
   return (
     <Card className="w-full">
@@ -51,7 +51,7 @@ const PhotoWall: React.FC<PhotoWallProps> = ({
               <SelectValue placeholder="All games" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All games</SelectItem>
+              <SelectItem value="all">All games</SelectItem>
               {sortedGames.map(game => (
                 <SelectItem key={game.id} value={game.id}>
                   <div className="flex items-center">
