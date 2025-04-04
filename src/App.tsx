@@ -9,6 +9,7 @@ import { GolfStateProvider } from "./context/GolfStateContext";
 import Index from "./pages/Index";
 import Leaderboard from "./pages/Leaderboard";
 import Photos from "./pages/Photos";
+import AdminDashboard from "./pages/admin/Dashboard";
 import Players from "./pages/admin/Players";
 import Games from "./pages/admin/Games";
 import Scores from "./pages/admin/Scores";
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/photos" element={<Photos />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/players" element={<Players />} />
             <Route path="/admin/games" element={<Games />} />
             <Route path="/admin/scores" element={<Scores />} />

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Flag, Users, Calendar, Award, List } from 'lucide-react';
+import { Flag, Users, Calendar, Award, List, LayoutDashboard, Photo } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -72,8 +72,26 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
               label="Leaderboard" 
               isActive={location.pathname === '/leaderboard'} 
             />
+            <NavItem 
+              to="/photos" 
+              icon={<Photo className="h-5 w-5" />} 
+              label="Photo Wall" 
+              isActive={location.pathname === '/photos'} 
+            />
             {isAdmin && (
               <>
+                <div className="pt-4 pb-2">
+                  <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Admin Area
+                  </p>
+                </div>
+                <NavItem 
+                  to="/admin" 
+                  icon={<LayoutDashboard className="h-5 w-5" />} 
+                  label="Admin Dashboard" 
+                  isActive={location.pathname === '/admin'} 
+                  isAdmin
+                />
                 <NavItem 
                   to="/admin/players" 
                   icon={<Users className="h-5 w-5" />} 
@@ -122,17 +140,15 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             <Award className={`h-6 w-6 ${location.pathname === '/leaderboard' ? 'text-golf-green' : 'text-gray-500'}`} />
             <span className="text-xs">Leaderboard</span>
           </Link>
+          <Link to="/photos" className="flex flex-col items-center p-2">
+            <Photo className={`h-6 w-6 ${location.pathname === '/photos' ? 'text-golf-green' : 'text-gray-500'}`} />
+            <span className="text-xs">Photos</span>
+          </Link>
           {isAdmin && (
-            <>
-              <Link to="/admin/players" className="flex flex-col items-center p-2">
-                <Users className={`h-6 w-6 ${location.pathname === '/admin/players' ? 'text-golf-green' : 'text-gray-500'}`} />
-                <span className="text-xs">Players</span>
-              </Link>
-              <Link to="/admin/games" className="flex flex-col items-center p-2">
-                <Calendar className={`h-6 w-6 ${location.pathname === '/admin/games' ? 'text-golf-green' : 'text-gray-500'}`} />
-                <span className="text-xs">Games</span>
-              </Link>
-            </>
+            <Link to="/admin" className="flex flex-col items-center p-2">
+              <LayoutDashboard className={`h-6 w-6 ${location.pathname.startsWith('/admin') ? 'text-golf-green' : 'text-gray-500'}`} />
+              <span className="text-xs">Admin</span>
+            </Link>
           )}
         </div>
       </div>
