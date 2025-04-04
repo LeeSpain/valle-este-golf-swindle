@@ -51,19 +51,17 @@ export async function apiClient<T>(
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || `Error: ${response.status} ${response.statusText}`;
       
-      toast({
-        title: "API Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      console.error("API Error:", errorMessage);
       
-      throw new Error(errorMessage);
+      // Return null instead of throwing error
+      return null as unknown as T;
     }
     
     return await response.json();
   } catch (error) {
     console.error("API call failed:", error);
-    throw error;
+    // Return null instead of throwing error
+    return null as unknown as T;
   }
 }
 
