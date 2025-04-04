@@ -2,7 +2,7 @@
 import { Score, HoleScore } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { useGolfStateContext } from '@/context/GolfStateContext';
-import { saveScore as saveScoreApi, verifyScore as verifyScoreApi } from '@/api/scoreService';
+import { createScore, updateScore, verifyScore as verifyScoreApi } from '@/api/scoreService';
 
 export function useScores() {
   const { scores, setScores } = useGolfStateContext();
@@ -10,7 +10,16 @@ export function useScores() {
   // Updated to accept a complete Score object instead of individual parameters
   const saveScore = async (score: Score): Promise<Score | null> => {
     try {
-      const savedScore = await saveScoreApi(score);
+      let savedScore;
+      
+      // If the score has an ID, update it; otherwise, create it
+      if (score.id) {
+        savedScore = await updateScore(score.id, score);
+      } else {
+        // Need to omit id, createdAt, updatedAt when creating
+        const { id, createdAt, updatedAt, ...newScoreData } = score;
+        savedScore = await createScore(newScoreData);
+      }
       
       // Update local state
       setScores(prev => {
