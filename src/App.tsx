@@ -12,6 +12,8 @@ import Leaderboard from "./pages/Leaderboard";
 import Photos from "./pages/Photos";
 import PlayerProfile from "./pages/PlayerProfile";
 import GameDetails from "./pages/GameDetails";
+import Settings from "./pages/Settings";
+import Help from "./pages/Help";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Players from "./pages/admin/Players";
 import Games from "./pages/admin/Games";
@@ -32,6 +34,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/photos" element={<Photos />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/help" element={<Help />} />
               <Route path="/players/:playerId" element={<PlayerProfile />} />
               <Route path="/games/:gameId" element={<GameDetails />} />
               <Route path="/admin" element={<AdminDashboard />} />

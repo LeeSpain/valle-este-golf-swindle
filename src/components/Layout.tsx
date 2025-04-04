@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Flag, Users, Calendar, Award, List, LayoutDashboard, Image, Settings } from 'lucide-react';
+import { Flag, Users, Calendar, Award, List, LayoutDashboard, Image, Settings, HelpCircle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -48,6 +48,12 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             <h1 className="text-xl font-bold">Karen's Bar Golf Swindle</h1>
           </div>
           <div className="flex items-center gap-3">
+            <Link to="/settings">
+              <Button variant="outline" size="sm" className="bg-transparent border-white text-white hover:bg-white hover:text-golf-green">
+                <Settings className="h-4 w-4 mr-1" />
+                Settings
+              </Button>
+            </Link>
             {isAdmin ? (
               <span className="bg-sand-beige text-golf-green px-2 py-1 rounded-full text-sm font-semibold">
                 Admin
@@ -84,6 +90,18 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
               icon={<Image className="h-5 w-5" />} 
               label="Photo Wall" 
               isActive={location.pathname === '/photos'} 
+            />
+            <NavItem 
+              to="/settings" 
+              icon={<Settings className="h-5 w-5" />} 
+              label="Settings" 
+              isActive={location.pathname === '/settings'} 
+            />
+            <NavItem 
+              to="/help" 
+              icon={<HelpCircle className="h-5 w-5" />} 
+              label="Help & FAQ" 
+              isActive={location.pathname === '/help'} 
             />
             {isAdmin && (
               <>
@@ -151,9 +169,13 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             <Image className={`h-6 w-6 ${location.pathname === '/photos' ? 'text-golf-green' : 'text-gray-500'}`} />
             <span className="text-xs">Photos</span>
           </Link>
-          <Link to="/admin" className="flex flex-col items-center p-2">
-            <Settings className={`h-6 w-6 ${location.pathname.startsWith('/admin') ? 'text-golf-green' : 'text-gray-500'}`} />
-            <span className="text-xs">Admin</span>
+          <Link to="/settings" className="flex flex-col items-center p-2">
+            <Settings className={`h-6 w-6 ${location.pathname === '/settings' ? 'text-golf-green' : 'text-gray-500'}`} />
+            <span className="text-xs">Settings</span>
+          </Link>
+          <Link to="/help" className="flex flex-col items-center p-2">
+            <HelpCircle className={`h-6 w-6 ${location.pathname === '/help' ? 'text-golf-green' : 'text-gray-500'}`} />
+            <span className="text-xs">Help</span>
           </Link>
         </div>
       </div>
