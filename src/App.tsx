@@ -78,7 +78,7 @@ const AppErrorFallback = ({ error }: { error: Error }) => (
 );
 
 const App = () => {
-  const [appReady, setAppReady] = useState(false);
+  const [appReady, setAppReady] = useState(true); // Set to true by default to prevent loading delay
   const [appError, setAppError] = useState<Error | null>(null);
   const [renderCount, setRenderCount] = useState(0);
   
@@ -98,23 +98,11 @@ const App = () => {
     });
     
     try {
-      // Mark app as ready after a small delay to ensure everything is loaded
-      const timer = setTimeout(() => {
-        setAppReady(true);
-        console.log('App marked as ready');
-      }, 100);
-      
-      // Force app to show after a longer timeout even if there are issues
-      const emergencyTimer = setTimeout(() => {
-        if (!appReady) {
-          console.log('Emergency timeout: forcing app to render');
-          setAppReady(true);
-        }
-      }, 2000);
+      // No need for timeouts, immediately mark as ready
+      setAppReady(true);
+      console.log('App marked as ready');
       
       return () => {
-        clearTimeout(timer);
-        clearTimeout(emergencyTimer);
         console.log('App component unmounted');
       };
     } catch (error) {

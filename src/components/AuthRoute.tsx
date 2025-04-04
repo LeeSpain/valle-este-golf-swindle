@@ -41,36 +41,14 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
       requireAdmin 
     });
     
-    // Set a timeout to show content even if auth is taking too long
-    const timer = setTimeout(() => {
-      setShowingContent(true);
-      console.log("AuthRoute timeout triggered, showing content anyway");
-    }, 500); // Reduced timeout for faster development
+    // Display content immediately instead of waiting
+    setShowingContent(true);
     
-    // Force a re-render after a short delay in case components are stuck
-    const renderTimer = setTimeout(() => {
-      setForceRender(true);
-      console.log("Force re-render triggered in AuthRoute");
-    }, 800);
-    
-    // Super fallback timer - if nothing else works, try to refresh the page
-    const emergencyTimer = setTimeout(() => {
-      if (!showingContent && !forceRender) {
-        console.log("Emergency timeout - trying to reload the app");
-        // Instead of refreshing automatically which can lead to loops,
-        // we'll show a message allowing the user to refresh
-        setAuthError("Application seems to be stuck. You may need to refresh the page.");
-        setShowingContent(true);
-      }
-    }, 5000);
-    
+    // No longer need emergency timers
     return () => {
-      clearTimeout(timer);
-      clearTimeout(renderTimer);
-      clearTimeout(emergencyTimer);
       console.log("AuthRoute unmounted");
     };
-  }, [user, isLoading, location.pathname]);
+  }, [user, isLoading, location.pathname, requireAdmin]);
 
   // Handle errors that might occur during auth checking
   useEffect(() => {
@@ -86,11 +64,11 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
     }
   }, [user, requireAdmin]);
 
-  // Always allow access in development mode, if forcing render, or after a certain time
+  // Always allow access in development mode
   const bypassAuth = process.env.NODE_ENV === 'development' || forceRender || showingContent;
   
   if (bypassAuth) {
-    console.log(`${process.env.NODE_ENV === 'development' ? "Development mode" : forceRender ? "Force render" : "Timeout"}: bypassing strict authentication checks`);
+    console.log(`${process.env.NODE_ENV === 'development' ? "Development mode" : showingContent ? "Content showing" : "Force render"}: bypassing strict authentication checks`);
     
     // Still show error for admin routes if we have the user but they're not admin
     if (requireAdmin && user && user.role !== 'admin' && !forceRender) {

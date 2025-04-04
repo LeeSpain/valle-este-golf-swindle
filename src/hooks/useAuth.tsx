@@ -12,6 +12,13 @@ export function useAuth() {
   
   useEffect(() => {
     console.log("useAuth hook initialized with user:", user);
+    
+    // Check if we have a user in localStorage that isn't in state
+    const storedUser = getCurrentUser();
+    if (!user && storedUser) {
+      console.log("Restoring user from localStorage:", storedUser);
+      setUser(storedUser);
+    }
   }, [user]);
   
   const login = async (email: string, password: string) => {
@@ -54,7 +61,7 @@ export function useAuth() {
     console.log("Logging out user");
     apiLogout();
     setUser(null);
-    navigate('/');
+    navigate('/login');
     
     toast({
       title: "Logged Out",
