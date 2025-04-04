@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Flag, Users, Calendar, Award, List, LayoutDashboard, Photo } from 'lucide-react';
+import { Flag, Users, Calendar, Award, List, LayoutDashboard, Image } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -74,7 +73,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             />
             <NavItem 
               to="/photos" 
-              icon={<Photo className="h-5 w-5" />} 
+              icon={<Image className="h-5 w-5" />} 
               label="Photo Wall" 
               isActive={location.pathname === '/photos'} 
             />
@@ -141,7 +140,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             <span className="text-xs">Leaderboard</span>
           </Link>
           <Link to="/photos" className="flex flex-col items-center p-2">
-            <Photo className={`h-6 w-6 ${location.pathname === '/photos' ? 'text-golf-green' : 'text-gray-500'}`} />
+            <Image className={`h-6 w-6 ${location.pathname === '/photos' ? 'text-golf-green' : 'text-gray-500'}`} />
             <span className="text-xs">Photos</span>
           </Link>
           {isAdmin && (

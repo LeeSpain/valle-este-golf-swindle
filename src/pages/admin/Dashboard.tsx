@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGolfState } from '@/hooks/useGolfState';
 import { Button } from '@/components/ui/button';
-import { Users, Calendar, ClipboardList, Photo, ChevronRight } from 'lucide-react';
+import { Users, Calendar, ClipboardList, Image, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const AdminDashboard = () => {
@@ -194,7 +193,7 @@ const AdminDashboard = () => {
               <Card className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Photo className="h-5 w-5 text-golf-green" />
+                    <Image className="h-5 w-5 text-golf-green" />
                     <span>Photo Wall</span>
                   </CardTitle>
                   <CardDescription>
