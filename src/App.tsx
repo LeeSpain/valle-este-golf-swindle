@@ -32,9 +32,11 @@ const queryClient = new QueryClient({
       retry: 1,
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
-      // Add fallback behavior for query errors
-      onError: (error) => {
-        console.error("Query error:", error);
+      meta: {
+        // Add error handling through meta for the latest version of react-query
+        onError: (error: any) => {
+          console.error("Query error:", error);
+        }
       }
     },
   },
