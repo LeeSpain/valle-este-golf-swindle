@@ -3,9 +3,12 @@ import { Game } from '@/types';
 import { createGame } from '@/data/mockData';
 import { toast } from '@/hooks/use-toast';
 import { useGolfStateContext } from '@/context/GolfStateContext';
+import { useContext } from 'react';
+import { NotificationsContext } from '@/context/NotificationsContext';
 
 export function useGames() {
   const { games, setGames, scores } = useGolfStateContext();
+  const notifications = useContext(NotificationsContext);
   
   // Find next game
   const getNextGame = (): Game | null => {
@@ -34,10 +37,18 @@ export function useGames() {
       title: "Game Scheduled",
       description: `New game has been scheduled for ${new Date(newGame.date).toLocaleDateString()}.`
     });
+    
+    // Notify about the upcoming game
+    if (notifications) {
+      notifications.notifyUpcomingGame(newGame.date, newGame.teeTime);
+    }
+    
     return newGame;
   };
   
   const updateGame = (gameId: string, data: Partial<Game>) => {
+    const gameBeforeUpdate = games.find(game => game.id === gameId);
+    
     setGames(prev => 
       prev.map(game => 
         game.id === gameId 
@@ -45,10 +56,22 @@ export function useGames() {
           : game
       )
     );
+    
     toast({
       title: "Game Updated",
       description: `Game details have been updated.`
     });
+    
+    // If date or tee time changed, send notification
+    const updatedGame = games.find(game => game.id === gameId);
+    if (notifications && updatedGame && gameBeforeUpdate) {
+      if (data.date !== gameBeforeUpdate.date || data.teeTime !== gameBeforeUpdate.teeTime) {
+        notifications.notifyUpcomingGame(
+          updatedGame.date, 
+          updatedGame.teeTime
+        );
+      }
+    }
   };
   
   const deleteGame = (gameId: string) => {

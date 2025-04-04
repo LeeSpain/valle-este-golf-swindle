@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +16,7 @@ import Players from "./pages/admin/Players";
 import Games from "./pages/admin/Games";
 import Scores from "./pages/admin/Scores";
 import NotFound from "./pages/NotFound";
+import { NotificationsProvider } from "./context/NotificationsContext";
 
 const queryClient = new QueryClient();
 
@@ -23,22 +24,24 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <GolfStateProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/photos" element={<Photos />} />
-            <Route path="/players/:playerId" element={<PlayerProfile />} />
-            <Route path="/games/:gameId" element={<GameDetails />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/players" element={<Players />} />
-            <Route path="/admin/games" element={<Games />} />
-            <Route path="/admin/scores" element={<Scores />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <NotificationsProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/photos" element={<Photos />} />
+              <Route path="/players/:playerId" element={<PlayerProfile />} />
+              <Route path="/games/:gameId" element={<GameDetails />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/players" element={<Players />} />
+              <Route path="/admin/games" element={<Games />} />
+              <Route path="/admin/scores" element={<Scores />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </NotificationsProvider>
       </GolfStateProvider>
     </TooltipProvider>
   </QueryClientProvider>
