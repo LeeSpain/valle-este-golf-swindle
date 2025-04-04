@@ -1,16 +1,9 @@
 
 import { toast } from "@/hooks/use-toast";
+import { mockPlayers, mockGames, mockScores, mockPhotos, mockWeather } from "@/data/mockData";
 
 // Base URL for API calls - change this to your real API endpoint
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.karensbarswinglegolf.com';
-
-// Mock data for demo purposes
-const mockData = {
-  players: [],
-  games: [],
-  scores: [],
-  photos: []
-};
 
 /**
  * Generic API client with error handling
@@ -21,16 +14,19 @@ export async function apiClient<T>(
 ): Promise<T> {
   // For demo purposes, simulate API responses
   if (endpoint.startsWith('/players')) {
-    return mockData.players as unknown as T;
+    return mockPlayers as unknown as T;
   }
   if (endpoint.startsWith('/games')) {
-    return mockData.games as unknown as T;
+    return mockGames as unknown as T;
   }
   if (endpoint.startsWith('/scores')) {
-    return mockData.scores as unknown as T;
+    return mockScores as unknown as T;
   }
   if (endpoint.startsWith('/photos')) {
-    return mockData.photos as unknown as T;
+    return mockPhotos as unknown as T;
+  }
+  if (endpoint.startsWith('/weather')) {
+    return mockWeather as unknown as T;
   }
 
   // Real API logic (currently unused for demo)

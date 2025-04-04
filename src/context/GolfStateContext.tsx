@@ -17,8 +17,8 @@ const mockPlayers: Player[] = [
     handicap: 12,
     gender: 'male',
     preferredTee: 'yellow',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: new Date(),
+    updatedAt: new Date()
   },
   {
     id: 'p2',
@@ -27,8 +27,8 @@ const mockPlayers: Player[] = [
     handicap: 18,
     gender: 'female',
     preferredTee: 'red',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: new Date(),
+    updatedAt: new Date()
   },
   {
     id: 'p3',
@@ -36,9 +36,9 @@ const mockPlayers: Player[] = [
     email: 'mike@example.com',
     handicap: 8,
     gender: 'male',
-    preferredTee: 'white',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    preferredTee: 'yellow', // Changed from 'white' to 'yellow' as per TeeColor type
+    createdAt: new Date(),
+    updatedAt: new Date()
   }
 ];
 
@@ -49,25 +49,27 @@ nextWeek.setDate(today.getDate() + 7);
 const mockGames: Game[] = [
   {
     id: 'g1',
-    date: nextWeek.toISOString(),
+    date: nextWeek,
     teeTime: '10:00',
     courseSide: 'front9',
     players: ['p1', 'p2', 'p3'],
     isComplete: false,
+    isVerified: false,
     notes: 'Bring extra balls, water hazards are tricky on holes 2 and 7.',
-    createdAt: today.toISOString(),
-    updatedAt: today.toISOString()
+    createdAt: today,
+    updatedAt: today
   },
   {
     id: 'g2',
-    date: today.toISOString(),
+    date: today,
     teeTime: '14:30',
     courseSide: 'back9',
     players: ['p1', 'p3'],
     isComplete: false,
+    isVerified: false,
     notes: '',
-    createdAt: new Date(today.setDate(today.getDate() - 3)).toISOString(),
-    updatedAt: new Date(today.setDate(today.getDate() - 3)).toISOString()
+    createdAt: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000),
+    updatedAt: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000)
   }
 ];
 
@@ -76,12 +78,13 @@ const mockScores: Score[] = [
     id: 's1',
     playerId: 'p1',
     gameId: 'g2',
-    totalScore: 89,
+    holes: [], // Added the required holes property
+    totalStrokes: 89,
+    totalNetStrokes: 79,
     totalStablefordPoints: 32,
     isVerified: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    holeScores: []
+    createdAt: new Date(),
+    updatedAt: new Date()
   }
 ];
 
@@ -89,7 +92,6 @@ const mockWeather: WeatherData = {
   temperature: 28,
   condition: 'sunny',
   windSpeed: 12,
-  humidity: 65,
   iconUrl: 'https://cdn.weatherapi.com/weather/64x64/day/113.png'
 };
 
@@ -99,8 +101,8 @@ const mockPhotos: PhotoItem[] = [
     url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa',
     caption: 'Beautiful day at the course',
     uploadedBy: 'p1',
-    uploadedAt: new Date().toISOString(),
-    likes: 5
+    gameId: 'g1',
+    createdAt: new Date()
   }
 ];
 
