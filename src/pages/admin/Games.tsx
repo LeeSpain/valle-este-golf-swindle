@@ -13,6 +13,7 @@ import { Calendar, ClipboardList } from 'lucide-react';
 
 const Games = () => {
   const { games, players, scores, isLoading, addGame, updateGame, deleteGame, saveScore, verifyScore } = useGolfState();
+  // Initialize showForm to false to prevent automatic redirect
   const [showForm, setShowForm] = useState(false);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [scoreEntry, setScoreEntry] = useState<Game | null>(null);

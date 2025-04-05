@@ -1,5 +1,5 @@
 
-import React, { ReactNode, memo, useEffect, useRef } from 'react';
+import React, { ReactNode, memo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -13,25 +13,6 @@ interface AuthRouteProps {
 // Memoize the component to prevent unnecessary re-renders
 const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = false }) => {
   const { user, isLoading, authInitialized } = useAuth();
-  
-  // Use ref to track component mounted state
-  const isMountedRef = useRef(true);
-  
-  // Debug logging to track component lifecycle
-  useEffect(() => {
-    console.log("AuthRoute rendered with:", { 
-      userEmail: user?.email, 
-      isLoading, 
-      authInitialized, 
-      requireAdmin,
-      isMounted: isMountedRef.current
-    });
-    
-    return () => {
-      console.log("AuthRoute unmounted");
-      isMountedRef.current = false;
-    };
-  }, [user, isLoading, authInitialized, requireAdmin]);
   
   // Don't render anything until auth is initialized
   if (!authInitialized) {
@@ -63,7 +44,6 @@ const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = fal
   
   // If user is not logged in, redirect to login
   if (!user) {
-    console.log("User not authenticated, redirecting to login");
     return <Navigate to="/login" replace />;
   }
   
@@ -83,7 +63,6 @@ const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = fal
   }
   
   // User is authenticated, render children
-  console.log("AuthRoute rendering children for user:", user.email);
   return <>{children}</>;
 });
 
