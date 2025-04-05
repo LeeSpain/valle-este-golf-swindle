@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,8 +33,8 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const { login, isLoading } = useAuth();
-  const navigate = useNavigate();
+  const { login, isLoading, user } = useAuth();
+  const location = useLocation();
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -44,7 +44,15 @@ const Login = () => {
     },
   });
 
+  // Add debug logging for the login component state
+  console.log("Login component render:", { 
+    isLoading, 
+    isLoggedIn: !!user,
+    referrer: location.state?.from?.pathname || '/' 
+  });
+
   const onSubmit = async (values: LoginFormValues) => {
+    console.log("Form submitted, logging in...");
     await login(values.email, values.password);
   };
 
@@ -100,10 +108,9 @@ const Login = () => {
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="flex justify-center">
-            <p className="text-sm text-gray-500">
-              For admin access, please contact Karen.
-            </p>
+          <CardFooter className="flex justify-between text-sm text-gray-500">
+            <div>Test accounts:</div>
+            <div>admin@example.com / password123</div>
           </CardFooter>
         </Card>
       </div>

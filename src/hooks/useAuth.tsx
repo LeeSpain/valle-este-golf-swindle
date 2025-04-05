@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { login as apiLogin, logout as apiLogout, getCurrentUser, isAdmin } from '@/api/authService';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/api/authService';
 import { toast } from '@/hooks/use-toast';
 import { User } from '@/types';
 
@@ -10,12 +10,15 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   
-  // Run once on mount to initialize auth state
+  // Initialize auth state only once on mount
   useEffect(() => {
     console.log("Auth hook initializing...");
     
     const initializeAuth = async () => {
+      if (authInitialized) return; // Prevent multiple initializations
+      
       setIsLoading(true);
       
       try {
@@ -37,8 +40,9 @@ export function useAuth() {
     };
     
     initializeAuth();
-  }, []);
+  }, [authInitialized]);
   
+  // Only log out if explicitly requested - prevents unintended logout
   const login = useCallback(async (email: string, password: string) => {
     console.log("Login attempt for:", email);
     setIsLoading(true);
@@ -55,12 +59,9 @@ export function useAuth() {
         description: `Welcome back, ${response.user.email}!`
       });
       
-      // Redirect based on role
-      if (response.user.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      // Get the redirect path from location state or default to home
+      const from = location.state?.from?.pathname || (response.user.role === 'admin' ? '/admin' : '/');
+      navigate(from, { replace: true });
       
       return true;
     } catch (error) {
@@ -75,10 +76,10 @@ export function useAuth() {
     } finally {
       setIsLoading(false);
     }
-  }, [navigate]);
+  }, [navigate, location]);
   
   const logout = useCallback(() => {
-    console.log("Logging out user");
+    console.log("User explicitly logging out");
     apiLogout();
     setUser(null);
     navigate('/login');
@@ -88,6 +89,16 @@ export function useAuth() {
       description: "You have been logged out successfully."
     });
   }, [navigate]);
+  
+  // Debug effect to track auth state changes
+  useEffect(() => {
+    console.log("Auth state updated:", { 
+      user: user?.email || "none",
+      isLoading,
+      authInitialized,
+      path: location.pathname
+    });
+  }, [user, isLoading, authInitialized, location.pathname]);
   
   return {
     user,

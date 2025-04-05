@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -24,7 +23,7 @@ import AdminSettings from "./pages/admin/Settings";
 import NotFound from "./pages/NotFound";
 import './App.css';
 
-// Create a stable QueryClient instance with simplified configuration
+// Create a stable QueryClient instance with better error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -53,114 +52,41 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <BrowserRouter>
-            <GolfStateProvider>
-              <NotificationsProvider>
-                <Toaster />
-                <Sonner />
-                <ErrorBoundary>
+            <ErrorBoundary>
+              <GolfStateProvider>
+                <NotificationsProvider>
+                  {/* Global UI components */}
+                  <Toaster />
+                  <Sonner />
+                  
+                  {/* Application routes */}
                   <Suspense fallback={<LoadingFallback />}>
                     <Routes>
+                      {/* Public route */}
                       <Route path="/login" element={<Login />} />
                       
                       {/* Protected Routes */}
-                      <Route 
-                        path="/" 
-                        element={
-                          <AuthRoute>
-                            <Index />
-                          </AuthRoute>
-                        } 
-                      />
-                      
-                      <Route 
-                        path="/leaderboard" 
-                        element={
-                          <AuthRoute>
-                            <Leaderboard />
-                          </AuthRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/photos" 
-                        element={
-                          <AuthRoute>
-                            <Photos />
-                          </AuthRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/help" 
-                        element={
-                          <AuthRoute>
-                            <Help />
-                          </AuthRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/players/:playerId" 
-                        element={
-                          <AuthRoute>
-                            <PlayerProfile />
-                          </AuthRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/games/:gameId" 
-                        element={
-                          <AuthRoute>
-                            <GameDetails />
-                          </AuthRoute>
-                        } 
-                      />
+                      <Route path="/" element={<AuthRoute><Index /></AuthRoute>} />
+                      <Route path="/leaderboard" element={<AuthRoute><Leaderboard /></AuthRoute>} />
+                      <Route path="/photos" element={<AuthRoute><Photos /></AuthRoute>} />
+                      <Route path="/help" element={<AuthRoute><Help /></AuthRoute>} />
+                      <Route path="/players/:playerId" element={<AuthRoute><PlayerProfile /></AuthRoute>} />
+                      <Route path="/games/:gameId" element={<AuthRoute><GameDetails /></AuthRoute>} />
                       
                       {/* Admin Routes */}
-                      <Route 
-                        path="/admin" 
-                        element={
-                          <AuthRoute requireAdmin>
-                            <AdminDashboard />
-                          </AuthRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/admin/players" 
-                        element={
-                          <AuthRoute requireAdmin>
-                            <Players />
-                          </AuthRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/admin/games" 
-                        element={
-                          <AuthRoute requireAdmin>
-                            <Games />
-                          </AuthRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/admin/scores" 
-                        element={
-                          <AuthRoute requireAdmin>
-                            <Scores />
-                          </AuthRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/admin/settings" 
-                        element={
-                          <AuthRoute requireAdmin>
-                            <AdminSettings />
-                          </AuthRoute>
-                        } 
-                      />
+                      <Route path="/admin" element={<AuthRoute requireAdmin><AdminDashboard /></AuthRoute>} />
+                      <Route path="/admin/players" element={<AuthRoute requireAdmin><Players /></AuthRoute>} />
+                      <Route path="/admin/games" element={<AuthRoute requireAdmin><Games /></AuthRoute>} />
+                      <Route path="/admin/scores" element={<AuthRoute requireAdmin><Scores /></AuthRoute>} />
+                      <Route path="/admin/settings" element={<AuthRoute requireAdmin><AdminSettings /></AuthRoute>} />
                       
+                      {/* Fallback route */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
-                </ErrorBoundary>
-              </NotificationsProvider>
-            </GolfStateProvider>
+                </NotificationsProvider>
+              </GolfStateProvider>
+            </ErrorBoundary>
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>

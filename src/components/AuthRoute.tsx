@@ -1,5 +1,5 @@
 
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -15,43 +15,25 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   const { user, isLoading, authInitialized } = useAuth();
   const location = useLocation();
   
-  // Debug logging on mount and on any auth state change
-  useEffect(() => {
-    console.log("AuthRoute mounted/updated:", { 
-      user: user?.email || "none", 
-      isAuth: !!user,
-      isLoading, 
-      authInitialized,
-      path: location.pathname,
-      requireAdmin
-    });
-    
-    return () => {
-      console.log("AuthRoute unmounting from:", location.pathname);
-    };
-  }, [user, isLoading, authInitialized, location.pathname, requireAdmin]);
-
-  // If auth is still initializing, show a simple loading state
-  if (!authInitialized) {
-    console.log("Auth not initialized yet, showing loading");
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
-          <p className="mt-4 text-golf-green">Initializing application...</p>
-        </div>
-      </div>
-    );
-  }
+  // Debug logging for the current auth state
+  console.log("AuthRoute render state:", { 
+    path: location.pathname,
+    user: user?.email || "none", 
+    isAuth: !!user,
+    isLoading, 
+    authInitialized,
+    requireAdmin
+  });
   
-  // Auth is initialized but still loading
-  if (isLoading) {
-    console.log("Auth initialized but still loading");
+  // If auth is still initializing, show a loading state
+  if (!authInitialized || isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
-          <p className="mt-4 text-golf-green">Loading...</p>
+          <p className="mt-4 text-golf-green">
+            {!authInitialized ? "Initializing application..." : "Loading..."}
+          </p>
         </div>
       </div>
     );
@@ -59,7 +41,7 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   
   // If user is not logged in, redirect to login
   if (!user) {
-    console.log("User not authenticated, redirecting to login");
+    console.log("User not authenticated, redirecting to login from:", location.pathname);
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
@@ -80,7 +62,7 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   }
   
   // User is authenticated, render children
-  console.log("Auth check passed, rendering protected content");
+  console.log("Auth check passed, rendering protected content for:", user.email);
   return (
     <ErrorBoundary>
       <div data-testid="auth-route-content">
