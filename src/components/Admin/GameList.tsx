@@ -30,7 +30,7 @@ const GameList: React.FC<GameListProps> = ({
   isLoading
 }) => {
   // Sort games by date, newest first
-  const sortedGames = [...games].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const sortedGames = [...(games || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   
   // Format a date for display
   const formatDate = (date: Date | string) => {
@@ -44,6 +44,8 @@ const GameList: React.FC<GameListProps> = ({
   
   // Get player names as a comma-separated string
   const getPlayerNames = (playerIds: string[]) => {
+    if (!playerIds || playerIds.length === 0) return 'No players assigned';
+    
     const gamePlayerNames = playerIds.map(id => {
       const player = players.find(p => p.id === id);
       return player ? player.name : 'Unknown Player';
@@ -66,13 +68,6 @@ const GameList: React.FC<GameListProps> = ({
     return `${checkedInCount}/${game.players.length}`;
   };
   
-  // Check if all players have scores
-  const getAllScoresEntered = (game: Game) => {
-    // This would need to get scores from props or context
-    // For now, just using the isComplete flag
-    return game.isComplete;
-  };
-  
   // Get today's date at midnight for comparison
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -83,6 +78,12 @@ const GameList: React.FC<GameListProps> = ({
     date.setHours(0, 0, 0, 0);
     return date < today;
   };
+
+  console.log("GameList rendering with", { 
+    gamesCount: games?.length || 0, 
+    sortedGamesCount: sortedGames.length,
+    isLoading
+  });
 
   return (
     <div>

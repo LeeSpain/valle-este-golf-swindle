@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import GameList from '@/components/Admin/GameList';
 import GameForm from '@/components/Admin/GameForm';
@@ -14,13 +14,31 @@ import { Calendar, ClipboardList, Users, CheckCircle } from 'lucide-react';
 
 const Games = () => {
   const { games, players, scores, isLoading, addGame, updateGame, deleteGame, saveScore, verifyScore } = useGolfState();
-  // Initialize showForm to false to prevent automatic redirect
+  
+  // State is explicitly set to false to show the game list by default
   const [showForm, setShowForm] = useState(false);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [scoreEntry, setScoreEntry] = useState<Game | null>(null);
   const [checkInGame, setCheckInGame] = useState<Game | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   
+  // Reset state when component mounts to ensure we're always starting fresh
+  useEffect(() => {
+    setShowForm(false);
+    setEditingGame(null);
+    setScoreEntry(null);
+    setCheckInGame(null);
+    setDeleteConfirm(null);
+  }, []);
+  
+  console.log("Games component state:", { 
+    showForm, 
+    editingGame: editingGame?.id || null,
+    scoreEntry: scoreEntry?.id || null,
+    checkInGame: checkInGame?.id || null,
+    gamesCount: games?.length || 0,
+    isLoading
+  });
   
   const handleAddNew = () => {
     setEditingGame(null);
@@ -134,6 +152,16 @@ const Games = () => {
     return 'View and manage all scheduled games';
   };
 
+  if (isLoading) {
+    return (
+      <Layout isAdmin>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green"></div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout isAdmin>
       <div className="space-y-6">
@@ -164,7 +192,7 @@ const Games = () => {
                 onManageScores={handleManageScores}
                 onCheckIn={handleCheckIn}
                 onCompleteGame={handleCompleteGame}
-                isLoading={isLoading}
+                isLoading={false}
               />
             </CardContent>
           </Card>

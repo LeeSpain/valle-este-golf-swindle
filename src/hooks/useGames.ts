@@ -4,7 +4,6 @@ import { toast } from '@/hooks/use-toast';
 import { useGolfStateContext } from '@/context/GolfStateContext';
 import { useContext } from 'react';
 import { useNotificationsContext } from '@/context/NotificationsContext';
-import { createGame, updateGame, deleteGame } from '@/api/gameService';
 
 export function useGames() {
   const { games, setGames, scores } = useGolfStateContext();
@@ -12,6 +11,8 @@ export function useGames() {
   
   // Find next game
   const getNextGame = (): Game | null => {
+    if (!games || games.length === 0) return null;
+    
     const now = new Date();
     const upcomingGames = games
       .filter(game => new Date(game.date) >= now)
@@ -22,6 +23,8 @@ export function useGames() {
   
   // Find latest completed game
   const getLatestCompletedGame = (): Game | null => {
+    if (!games || games.length === 0) return null;
+    
     const now = new Date();
     const completedGames = games
       .filter(game => new Date(game.date) < now && game.isComplete)
@@ -40,10 +43,10 @@ export function useGames() {
       .map(status => status.playerId);
   };
   
-  // Updated to accept Partial<Game> instead of requiring specific fields
+  // Add a new game with proper playerStatus initialization
   const addGame = async (gameData: Partial<Game>) => {
     try {
-      // Initialize playerStatus for all selected players if not provided
+      // Ensure playerStatus is properly initialized for all selected players
       if (gameData.players && (!gameData.playerStatus || gameData.playerStatus.length === 0)) {
         gameData.playerStatus = gameData.players.map(playerId => ({
           playerId,
@@ -53,16 +56,28 @@ export function useGames() {
       }
       
       const newGame = await createGame(gameData);
-      setGames(prev => [...prev, newGame]);
       
-      toast({
-        title: "Game Scheduled",
-        description: `New game has been scheduled for ${new Date(newGame.date).toLocaleDateString()}.`
-      });
-      
-      // Notify about the upcoming game
-      if (notifications) {
-        notifications.notifyUpcomingGame(newGame.date.toString(), newGame.teeTime);
+      if (newGame) {
+        // Make sure playerStatus exists before adding to state
+        if (!newGame.playerStatus && newGame.players && newGame.players.length > 0) {
+          newGame.playerStatus = newGame.players.map(playerId => ({
+            playerId,
+            checkedIn: false,
+            hasPaid: false
+          }));
+        }
+        
+        setGames(prev => [...prev, newGame]);
+        
+        toast({
+          title: "Game Scheduled",
+          description: `New game has been scheduled for ${new Date(newGame.date).toLocaleDateString()}.`
+        });
+        
+        // Notify about the upcoming game
+        if (notifications) {
+          notifications.notifyUpcomingGame(newGame.date.toString(), newGame.teeTime);
+        }
       }
       
       return newGame;
@@ -75,34 +90,57 @@ export function useGames() {
   const updateGameById = async (gameId: string, data: Partial<Game>) => {
     try {
       const gameBeforeUpdate = games.find(game => game.id === gameId);
-      const updatedGame = await updateGame(gameId, data);
-      
-      setGames(prev => 
-        prev.map(game => 
-          game.id === gameId ? updatedGame : game
-        )
-      );
-      
-      // Different toast messages based on what was updated
-      if (data.isComplete) {
-        toast({
-          title: "Game Completed",
-          description: `The game has been marked as complete.`
-        });
-      } else {
-        toast({
-          title: "Game Updated",
-          description: `Game details have been updated.`
-        });
+      if (!gameBeforeUpdate) {
+        console.error('Game not found:', gameId);
+        return null;
       }
       
-      // If date or tee time changed, send notification
-      if (notifications && gameBeforeUpdate) {
-        if (data.date !== gameBeforeUpdate.date || data.teeTime !== gameBeforeUpdate.teeTime) {
-          notifications.notifyUpcomingGame(
-            updatedGame.date.toString(), 
-            updatedGame.teeTime
-          );
+      // Ensure playerStatus is maintained or updated properly
+      if (data.players && !data.playerStatus) {
+        // Update playerStatus based on new players
+        const existingPlayerIds = gameBeforeUpdate.playerStatus?.map(p => p.playerId) || [];
+        const newPlayerIds = data.players.filter(id => !existingPlayerIds.includes(id));
+        
+        data.playerStatus = [
+          ...(gameBeforeUpdate.playerStatus || []),
+          ...newPlayerIds.map(playerId => ({
+            playerId,
+            checkedIn: false,
+            hasPaid: false
+          }))
+        ].filter(status => data.players?.includes(status.playerId));
+      }
+      
+      const updatedGame = await updateGame(gameId, data);
+      
+      if (updatedGame) {
+        setGames(prev => 
+          prev.map(game => 
+            game.id === gameId ? updatedGame : game
+          )
+        );
+        
+        // Different toast messages based on what was updated
+        if (data.isComplete) {
+          toast({
+            title: "Game Completed",
+            description: `The game has been marked as complete.`
+          });
+        } else {
+          toast({
+            title: "Game Updated",
+            description: `Game details have been updated.`
+          });
+        }
+        
+        // If date or tee time changed, send notification
+        if (notifications && gameBeforeUpdate) {
+          if (data.date !== gameBeforeUpdate.date || data.teeTime !== gameBeforeUpdate.teeTime) {
+            notifications.notifyUpcomingGame(
+              updatedGame.date.toString(), 
+              updatedGame.teeTime
+            );
+          }
         }
       }
       
@@ -144,6 +182,9 @@ export function useGames() {
       return false;
     }
   };
+
+  // Import functions from API
+  const { createGame, updateGame, deleteGame } = require('@/api/gameService');
 
   return {
     games,

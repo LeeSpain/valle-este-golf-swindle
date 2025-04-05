@@ -14,6 +14,14 @@ interface AuthRouteProps {
 const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = false }) => {
   const { user, isLoading, authInitialized } = useAuth();
   
+  console.log("AuthRoute rendering with:", { 
+    user: user?.email || "none", 
+    role: user?.role || "none",
+    isLoading, 
+    authInitialized,
+    requireAdmin
+  });
+  
   // Don't render anything until auth is initialized
   if (!authInitialized) {
     return (
@@ -44,11 +52,13 @@ const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = fal
   
   // If user is not logged in, redirect to login
   if (!user) {
+    console.log("AuthRoute: User not logged in, redirecting to login");
     return <Navigate to="/login" replace />;
   }
   
   // Check admin access if required
   if (requireAdmin && user.role !== 'admin') {
+    console.log("AuthRoute: User is not admin, showing access denied");
     return (
       <div className="p-8 max-w-3xl mx-auto">
         <Alert variant="destructive">
@@ -63,6 +73,7 @@ const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = fal
   }
   
   // User is authenticated, render children
+  console.log("AuthRoute: User is authenticated, rendering children");
   return <>{children}</>;
 });
 
