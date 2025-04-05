@@ -1,17 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const DashboardHeader: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState(true);
-  
-  useEffect(() => {
-    console.log("DashboardHeader mounted");
-    return () => {
-      console.log("DashboardHeader unmounted");
-    };
-  }, []);
-  
-  console.log("DashboardHeader rendering");
   
   return (
     <div className="flex justify-between items-center mb-6">

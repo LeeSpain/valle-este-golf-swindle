@@ -1,5 +1,5 @@
 
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -14,6 +14,14 @@ interface AuthRouteProps {
 const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false }) => {
   const { user, isLoading, authInitialized } = useAuth();
   const location = useLocation();
+  const [stable, setStable] = useState(false);
+  
+  // Only update stable state after initial auth check is complete
+  useEffect(() => {
+    if (authInitialized && !isLoading) {
+      setStable(true);
+    }
+  }, [authInitialized, isLoading]);
   
   // Debug logging for the current auth state
   useEffect(() => {
@@ -23,9 +31,10 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
       isAuth: !!user,
       isLoading, 
       authInitialized,
-      requireAdmin
+      requireAdmin,
+      stable
     });
-  }, [user, isLoading, authInitialized, location.pathname, requireAdmin]);
+  }, [user, isLoading, authInitialized, location.pathname, requireAdmin, stable]);
   
   // If auth is still initializing, show a loading state
   if (!authInitialized || isLoading) {
@@ -63,11 +72,23 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
     );
   }
   
-  // User is authenticated, render children with key to ensure proper remounting
+  // Prevent rendering until we have a stable state
+  if (!stable) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
+          <p className="mt-4 text-golf-green">Preparing dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // User is authenticated, render children with key to ensure proper mounting
   console.log("Auth check passed, rendering protected content for:", user.email);
   return (
     <ErrorBoundary>
-      <div data-testid="auth-route-content" key={`auth-route-${location.pathname}`}>
+      <div data-testid="auth-route-content">
         {children}
       </div>
     </ErrorBoundary>

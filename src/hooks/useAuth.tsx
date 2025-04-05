@@ -15,14 +15,11 @@ export function useAuth() {
   
   // Initialize auth state only once on mount
   useEffect(() => {
-    if (initRef.current) return; // Prevent double initialization in strict mode
-    
-    console.log("Auth hook initializing...");
-    initRef.current = true;
-    
     const initializeAuth = async () => {
-      if (authInitialized) return; // Prevent multiple initializations
+      if (initRef.current) return; // Prevent double initialization
       
+      console.log("Auth hook initializing...");
+      initRef.current = true;
       setIsLoading(true);
       
       try {
@@ -98,16 +95,6 @@ export function useAuth() {
       description: "You have been logged out successfully."
     });
   }, [navigate]);
-  
-  // Debug effect for auth state changes - prevent excessive rerenders
-  useEffect(() => {
-    console.log("Auth state updated:", { 
-      user: user?.email || "none",
-      isLoading,
-      authInitialized,
-      path: location.pathname
-    });
-  }, [user, isLoading, authInitialized, location.pathname]);
   
   return {
     user,
