@@ -1,49 +1,57 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/api/authService';
 import { toast } from '@/hooks/use-toast';
 import { User } from '@/types';
 
 export function useAuth() {
+  // Use a ref for the initial state to avoid unnecessary re-renders
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
   const navigate = useNavigate();
   
-  // Initialize auth state
+  // Initialize auth state only once
   useEffect(() => {
+    let isMounted = true;
     const initializeAuth = async () => {
-      console.log("Auth hook initializing...");
+      if (!isMounted) return;
       
       try {
         // Get user from localStorage
         const storedUser = getCurrentUser();
-        console.log("User from localStorage:", storedUser);
         
-        // Set user state from localStorage
-        setUser(storedUser);
+        // Only update state if the component is still mounted
+        if (isMounted) {
+          setUser(storedUser);
+          setAuthInitialized(true);
+          setIsLoading(false);
+        }
       } catch (error) {
         console.error("Error during auth initialization:", error);
-        setUser(null);
-      } finally {
-        setAuthInitialized(true);
-        setIsLoading(false);
-        console.log("Auth initialization complete");
+        if (isMounted) {
+          setUser(null);
+          setAuthInitialized(true);
+          setIsLoading(false);
+        }
       }
     };
     
     initializeAuth();
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
   }, []);
   
   // Login function
   const login = useCallback(async (email: string, password: string) => {
-    console.log("Login attempt for:", email);
     setIsLoading(true);
     
     try {
       const response = await apiLogin({ email, password });
-      console.log("Login successful for:", response.user.email);
       
       // Update user state
       setUser(response.user);
@@ -73,7 +81,6 @@ export function useAuth() {
   }, [navigate]);
   
   const logout = useCallback(() => {
-    console.log("User explicitly logging out");
     apiLogout();
     setUser(null);
     navigate('/login');
@@ -84,12 +91,13 @@ export function useAuth() {
     });
   }, [navigate]);
   
-  return {
+  // Memoize the return value to prevent unnecessary re-renders
+  return useMemo(() => ({
     user,
     isLoading,
     isAdmin: user?.role === 'admin',
     login,
     logout,
     authInitialized
-  };
+  }), [user, isLoading, login, logout, authInitialized]);
 }

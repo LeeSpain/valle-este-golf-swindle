@@ -1,5 +1,5 @@
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, memo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -10,11 +10,12 @@ interface AuthRouteProps {
   requireAdmin?: boolean;
 }
 
-const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false }) => {
+// Memoize the component to prevent unnecessary re-renders
+const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = false }) => {
   const { user, isLoading, authInitialized } = useAuth();
   
   // If auth is still initializing, show a loading state
-  if (isLoading || !authInitialized) {
+  if (!authInitialized || isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
@@ -49,6 +50,8 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   
   // User is authenticated, render children
   return <>{children}</>;
-};
+});
+
+AuthRoute.displayName = 'AuthRoute';
 
 export default AuthRoute;
