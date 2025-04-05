@@ -8,6 +8,8 @@ interface DashboardErrorProps {
 }
 
 const DashboardError: React.FC<DashboardErrorProps> = ({ error }) => {
+  console.log("DashboardError rendering with error:", error);
+  
   if (!error) return null;
   
   return (
@@ -16,7 +18,7 @@ const DashboardError: React.FC<DashboardErrorProps> = ({ error }) => {
       <AlertTitle>Error</AlertTitle>
       <AlertDescription>
         There was an error loading the dashboard data. Please try refreshing the page.
-        <pre className="mt-2 p-2 bg-red-50 text-red-900 rounded text-xs">{error}</pre>
+        <pre className="mt-2 p-2 bg-red-50 text-red-900 rounded text-xs overflow-auto max-h-[200px]">{error}</pre>
       </AlertDescription>
     </Alert>
   );

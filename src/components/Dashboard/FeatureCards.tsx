@@ -6,6 +6,7 @@ import { Flag, ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const FeatureCards: React.FC = () => {
+  console.log("FeatureCards rendering");
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Card className="shadow-md hover:shadow-lg transition-shadow border-gray-100">
@@ -23,6 +24,13 @@ const FeatureCards: React.FC = () => {
             Enter your scores after each round and track your handicap changes
           </p>
         </CardContent>
+        <CardFooter>
+          <Button asChild variant="outline">
+            <Link to="/leaderboard">
+              View Scores
+            </Link>
+          </Button>
+        </CardFooter>
       </Card>
 
       <Card className="shadow-md hover:shadow-lg transition-shadow border-gray-100">

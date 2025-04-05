@@ -13,29 +13,31 @@ import DashboardHeader from '@/components/Dashboard/DashboardHeader';
 import StatsCards from '@/components/Dashboard/StatsCards';
 import FeatureCards from '@/components/Dashboard/FeatureCards';
 import DashboardError from '@/components/Dashboard/DashboardError';
+import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
+  console.log("Index component starts rendering");
   const { players, games, getNextGame, weather, scores, isLoading, error } = useGolfState();
   
   useEffect(() => {
-    console.log("Index component mounted", { players, games, weather, scores, isLoading, error });
+    console.log("Index component mounted", { 
+      playersCount: players?.length || 0, 
+      gamesCount: games?.length || 0
+    });
+    
+    toast({
+      title: "Dashboard loaded",
+      description: "Welcome to Karen's Bar Golf Swindle",
+    });
+    
     return () => {
       console.log("Index component unmounted");
     };
-  }, []);
+  }, [players, games]);
   
-  // Add more logging to track rendering
-  console.log("Dashboard rendering with data:", { 
-    playersLength: players?.length || 0, 
-    gamesLength: games?.length || 0, 
-    weatherAvailable: !!weather, 
-    scoresLength: scores?.length || 0, 
-    isLoading, 
-    hasError: !!error 
-  });
-  
-  // Handle loading state or errors
-  if (error && !isLoading) {
+  // Add visible error fallback for debugging purposes
+  if (error) {
+    console.error("Dashboard error:", error);
     return (
       <Layout>
         <DashboardError error={error} />
@@ -43,22 +45,40 @@ const Index = () => {
     );
   }
   
-  // Try-catch to prevent blank screens from errors
+  // Add loading indicator
+  if (isLoading) {
+    console.log("Dashboard is loading...");
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
+            <p className="mt-4 text-golf-green">Loading dashboard...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+  
+  console.log("Dashboard preparing to render content");
+  
   try {
     const nextGame = getNextGame ? getNextGame() : null;
+    console.log("Next game retrieved:", nextGame ? nextGame.id : "none");
     
     // Add current player (first player for demonstration)
     const currentPlayer = players && players.length > 0 ? players[0] : null;
+    console.log("Current player:", currentPlayer ? currentPlayer.name : "none");
     
     return (
       <Layout>
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6">
           <DashboardHeader />
 
           {/* Main Dashboard Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Next Game Card */}
-            <Card className="md:col-span-2 shadow-md hover:shadow-lg transition-shadow border-none glass-card">
+            <Card className="md:col-span-2 shadow-md hover:shadow-lg transition-shadow border-gray-100">
               <CardHeader className="pb-2 bg-gradient-to-r from-golf-green-light/10 to-transparent rounded-t-lg">
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-golf-green" />
@@ -75,19 +95,19 @@ const Index = () => {
                   isLoading={isLoading} 
                 />
               </CardContent>
-              <CardFooter>
-                {nextGame && (
+              {nextGame && (
+                <CardFooter>
                   <Button asChild variant="default" className="w-full sm:w-auto">
                     <Link to={`/games/${nextGame.id}`}>
                       View Game Details
                     </Link>
                   </Button>
-                )}
-              </CardFooter>
+                </CardFooter>
+              )}
             </Card>
 
             {/* Weather Widget */}
-            <Card className="shadow-md hover:shadow-lg transition-shadow border-none glass-card">
+            <Card className="shadow-md hover:shadow-lg transition-shadow border-gray-100">
               <CardHeader className="pb-2 bg-gradient-to-r from-golf-green-light/10 to-transparent rounded-t-lg">
                 <CardTitle className="flex items-center gap-2">
                   <span>Weather</span>
@@ -112,7 +132,7 @@ const Index = () => {
           />
 
           {/* Player Stats Card */}
-          <Card className="shadow-md hover:shadow-lg transition-shadow border-none glass-card mt-6">
+          <Card className="shadow-md hover:shadow-lg transition-shadow border-gray-100 mt-6">
             <CardHeader className="pb-2 bg-gradient-to-r from-golf-green-light/10 to-transparent rounded-t-lg">
               <CardTitle className="flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-golf-green" />
@@ -144,10 +164,10 @@ const Index = () => {
       </Layout>
     );
   } catch (err) {
-    console.error("Error rendering Index component:", err);
+    console.error("Error in Index component render:", err);
     return (
       <Layout>
-        <DashboardError error={err instanceof Error ? err.message : "Unknown error"} />
+        <DashboardError error={err instanceof Error ? err.message : "Unknown error in Dashboard"} />
       </Layout>
     );
   }
