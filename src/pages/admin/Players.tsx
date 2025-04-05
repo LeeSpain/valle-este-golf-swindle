@@ -7,8 +7,6 @@ import { usePlayers } from '@/hooks/usePlayers';
 import { useGolfState } from '@/hooks/useGolfState';
 import { Player } from '@/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Players = () => {
@@ -139,42 +137,22 @@ const Players = () => {
           </p>
         </div>
         
-        {!showForm ? (
-          <Card className="border-none shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-golf-green-light/10 to-transparent pb-2">
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Users className="h-5 w-5 text-golf-green" />
-                <span>Player Roster</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <PlayerList 
-                players={players}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onAddNew={handleAddNew}
-                isLoading={isLoading}
-              />
-            </CardContent>
-          </Card>
+        {showForm ? (
+          <PlayerForm 
+            player={editingPlayer || {}}
+            isEditing={!!editingPlayer}
+            onSubmit={handleFormSubmit}
+            onCancel={handleCancel}
+            isSubmitting={isSubmitting}
+          />
         ) : (
-          <Card className="border-none shadow-lg animate-fade-in">
-            <CardHeader className="bg-gradient-to-r from-golf-green-light/10 to-transparent pb-4">
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Users className="h-5 w-5 text-golf-green" />
-                <span>{editingPlayer ? 'Edit Player Details' : 'Add New Player'}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PlayerForm 
-                player={editingPlayer || {}}
-                isEditing={!!editingPlayer}
-                onSubmit={handleFormSubmit}
-                onCancel={handleCancel}
-                isSubmitting={isSubmitting}
-              />
-            </CardContent>
-          </Card>
+          <PlayerList 
+            players={players}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onAddNew={handleAddNew}
+            isLoading={isLoading}
+          />
         )}
         
         <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>

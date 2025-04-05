@@ -3,10 +3,15 @@ import { Player } from '@/types';
 import { apiClient, getAuthHeaders } from './apiClient';
 
 export async function getPlayers(): Promise<Player[]> {
-  const result = await apiClient<Player[]>('/players', {
-    headers: getAuthHeaders()
-  });
-  return result || [];
+  try {
+    const result = await apiClient<Player[]>('/players', {
+      headers: getAuthHeaders()
+    });
+    return result || [];
+  } catch (error) {
+    console.error("Failed to get players:", error);
+    return [];
+  }
 }
 
 export async function getPlayerById(playerId: string): Promise<Player | null> {
@@ -23,31 +28,41 @@ export async function getPlayerById(playerId: string): Promise<Player | null> {
 
 // Updated to accept Partial<Player> instead of requiring all fields
 export async function createPlayer(playerData: Partial<Player>): Promise<Player> {
-  const result = await apiClient<Player>('/players', {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(playerData)
-  });
-  
-  if (!result) {
+  try {
+    const result = await apiClient<Player>('/players', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(playerData)
+    });
+    
+    if (!result) {
+      throw new Error("Failed to create player");
+    }
+    
+    return result;
+  } catch (error) {
+    console.error("Failed to create player:", error);
     throw new Error("Failed to create player");
   }
-  
-  return result;
 }
 
 export async function updatePlayer(playerId: string, playerData: Partial<Player>): Promise<Player> {
-  const result = await apiClient<Player>(`/players/${playerId}`, {
-    method: 'PUT',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(playerData)
-  });
-  
-  if (!result) {
+  try {
+    const result = await apiClient<Player>(`/players/${playerId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(playerData)
+    });
+    
+    if (!result) {
+      throw new Error("Failed to update player");
+    }
+    
+    return result;
+  } catch (error) {
+    console.error(`Failed to update player with ID ${playerId}:`, error);
     throw new Error("Failed to update player");
   }
-  
-  return result;
 }
 
 export async function deletePlayer(playerId: string): Promise<boolean> {

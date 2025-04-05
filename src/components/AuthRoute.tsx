@@ -30,7 +30,7 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
     };
   }, [user, isLoading, authInitialized, requireAdmin]);
   
-  // Don't render anything until auth is initialized
+  // Don't render anything until auth is initialized to prevent flashing
   if (!authInitialized) {
     return (
       <div className="h-screen flex items-center justify-center">

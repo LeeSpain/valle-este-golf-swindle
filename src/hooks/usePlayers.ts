@@ -2,7 +2,7 @@
 import { Player } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { useGolfStateContext } from '@/context/GolfStateContext';
-import { createPlayer, updatePlayer, deletePlayer } from '@/api/playerService';
+import { createPlayer, updatePlayer as apiUpdatePlayer, deletePlayer as apiDeletePlayer } from '@/api/playerService';
 import { useCallback } from 'react';
 
 export function usePlayers() {
@@ -25,7 +25,7 @@ export function usePlayers() {
         description: `${newPlayer.name} has been added to the swindle.`
       });
       
-      return newPlayer;
+      return true;
     } catch (error) {
       console.error('Error adding player:', error);
       
@@ -35,14 +35,14 @@ export function usePlayers() {
         variant: "destructive"
       });
       
-      return null;
+      return false;
     }
   }, [setPlayers]);
   
-  const updatePlayerById = useCallback(async (playerId: string, data: Partial<Player>) => {
+  const updatePlayer = useCallback(async (playerId: string, data: Partial<Player>) => {
     try {
       console.log("Updating player:", playerId, data);
-      const updatedPlayer = await updatePlayer(playerId, data);
+      const updatedPlayer = await apiUpdatePlayer(playerId, data);
       
       if (!updatedPlayer) {
         throw new Error("Failed to update player");
@@ -60,7 +60,7 @@ export function usePlayers() {
         description: `${updatedPlayer.name}'s details have been updated.`
       });
       
-      return updatedPlayer;
+      return true;
     } catch (error) {
       console.error('Error updating player:', error);
       
@@ -70,11 +70,11 @@ export function usePlayers() {
         variant: "destructive"
       });
       
-      return null;
+      return false;
     }
   }, [setPlayers]);
   
-  const deletePlayerById = useCallback(async (playerId: string) => {
+  const deletePlayer = useCallback(async (playerId: string) => {
     try {
       console.log("Deleting player:", playerId);
       
@@ -85,7 +85,11 @@ export function usePlayers() {
         return false;
       }
       
-      await deletePlayer(playerId);
+      const result = await apiDeletePlayer(playerId);
+      
+      if (!result) {
+        throw new Error("Failed to delete player");
+      }
       
       // Update state only after API call succeeds
       setPlayers(prev => prev.filter(player => player.id !== playerId));
@@ -112,7 +116,7 @@ export function usePlayers() {
   return {
     players,
     addPlayer,
-    updatePlayer: updatePlayerById,
-    deletePlayer: deletePlayerById
+    updatePlayer,
+    deletePlayer
   };
 }

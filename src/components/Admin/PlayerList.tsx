@@ -25,9 +25,15 @@ const PlayerList: React.FC<PlayerListProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   
   const filteredPlayers = players.filter(player => 
-    player.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    player.email.toLowerCase().includes(searchTerm.toLowerCase())
+    player.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    player.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  console.log("PlayerList rendering with", { 
+    playerCount: players.length, 
+    isLoading,
+    filteredCount: filteredPlayers.length
+  });
 
   if (isLoading) {
     return (

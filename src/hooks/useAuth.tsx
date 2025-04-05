@@ -12,7 +12,9 @@ export function useAuth() {
   // Initial user state from localStorage to prevent flicker
   const initialUser = useMemo(() => {
     try {
-      return getCurrentUser();
+      const currentUser = getCurrentUser();
+      console.log("useAuth: Initial user from localStorage:", currentUser?.email || "none");
+      return currentUser;
     } catch (error) {
       console.error("Error getting initial user:", error);
       return null;
@@ -21,13 +23,14 @@ export function useAuth() {
   
   const [user, setUser] = useState<User | null>(initialUser);
   const [isLoading, setIsLoading] = useState(false);
-  const [authInitialized, setAuthInitialized] = useState(true);
+  const [authInitialized, setAuthInitialized] = useState(!!initialUser); // Initialize based on user presence
   const navigate = useNavigate();
   
   // Make sure we don't update state after unmount
   useEffect(() => {
     console.log("useAuth: initializing with user:", initialUser?.email || "none");
     isMountedRef.current = true;
+    setAuthInitialized(true); // Ensure auth is always initialized after component mounts
     
     return () => {
       console.log("useAuth: cleanup");
