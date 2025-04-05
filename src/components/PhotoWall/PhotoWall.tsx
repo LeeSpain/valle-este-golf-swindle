@@ -24,17 +24,6 @@ const PhotoWall: React.FC<PhotoWallProps> = ({
 }) => {
   const [selectedGameId, setSelectedGameId] = useState<string>('all');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [processedPhotos, setProcessedPhotos] = useState<PhotoItem[]>([]);
-  
-  // Process photos only once when photos prop changes
-  useEffect(() => {
-    if (photos && photos.length > 0) {
-      console.log(`Processing ${photos.length} photos`);
-      setProcessedPhotos(photos);
-    } else {
-      setProcessedPhotos([]);
-    }
-  }, [photos]);
   
   // Sort games by date (newest first)
   const sortedGames = games && games.length > 0 
@@ -43,17 +32,16 @@ const PhotoWall: React.FC<PhotoWallProps> = ({
   
   // Filter photos by selected game
   const filteredPhotos = selectedGameId === 'all'
-    ? processedPhotos
-    : processedPhotos.filter(photo => photo.gameId === selectedGameId);
+    ? photos
+    : photos.filter(photo => photo.gameId === selectedGameId);
   
   useEffect(() => {
     console.log("PhotoWall component state:", {
       photoCount: photos?.length,
-      processedPhotoCount: processedPhotos?.length,
       gameCount: games?.length, 
       isLoading
     });
-  }, [photos, processedPhotos, games, isLoading]);
+  }, [photos, games, isLoading]);
   
   return (
     <Card className="w-full">

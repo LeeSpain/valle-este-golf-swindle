@@ -1,5 +1,5 @@
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,14 +13,11 @@ import DashboardHeader from '@/components/Dashboard/DashboardHeader';
 import StatsCards from '@/components/Dashboard/StatsCards';
 import FeatureCards from '@/components/Dashboard/FeatureCards';
 import DashboardError from '@/components/Dashboard/DashboardError';
-import { toast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Index = () => {
   // Add more logging to identify rendering issues
   console.log("Index component starts rendering");
-  
-  // Track mount state
-  const isMounted = useRef(true);
   
   // Get data from GolfState
   const { players, games, getNextGame, weather, scores, isLoading, error } = useGolfState();
@@ -41,31 +38,8 @@ const Index = () => {
     gamesCount: games?.length || 0,
     nextGameId: nextGame?.id || "none",
     currentPlayerName: currentPlayer?.name || "none",
-    isLoading,
-    isPageMounted: isMounted.current
+    isLoading
   });
-  
-  // Track mount/unmount for debugging
-  useEffect(() => {
-    isMounted.current = true;
-    console.log("Index component mounted");
-    
-    // Welcome toast is shown only once when the component mounts
-    const timer = setTimeout(() => {
-      if (isMounted.current) {
-        toast({
-          title: "Dashboard loaded",
-          description: "Welcome to Karen's Bar Golf Swindle",
-        });
-      }
-    }, 500);
-    
-    return () => {
-      isMounted.current = false;
-      clearTimeout(timer);
-      console.log("Index component unmounted");
-    };
-  }, []);
   
   // Create render content separate from component return to ensure stable rendering
   const renderContent = () => {
@@ -73,11 +47,18 @@ const Index = () => {
     if (isLoading) {
       console.log("Dashboard is loading...");
       return (
-        <div className="flex items-center justify-center h-[60vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
-            <p className="mt-4 text-golf-green">Loading dashboard...</p>
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-1/3" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Skeleton className="md:col-span-2 h-[300px] rounded-lg" />
+            <Skeleton className="h-[300px] rounded-lg" />
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Skeleton className="h-[100px] rounded-lg" />
+            <Skeleton className="h-[100px] rounded-lg" />
+            <Skeleton className="h-[100px] rounded-lg" />
+          </div>
+          <Skeleton className="h-[250px] rounded-lg" />
         </div>
       );
     }
@@ -191,5 +172,4 @@ const Index = () => {
   );
 };
 
-// Use React.memo to prevent unnecessary re-renders
-export default React.memo(Index);
+export default Index;

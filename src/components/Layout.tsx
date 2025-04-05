@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface NavItemProps {
   to: string;
@@ -52,23 +52,10 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  
-  // Ensure the component is mounted before rendering content that might depend on browser APIs
-  useEffect(() => {
-    setMounted(true);
-    console.log("Layout mounted successfully");
-  }, []);
   
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
-  
-  if (!mounted) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-pulse">Loading...</div>
-    </div>;
-  }
   
   console.log("Layout rendering with user:", user);
   
@@ -235,7 +222,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
         </aside>
         
         <main className="flex-1 pb-20 md:pb-0">
-          <div className="animate-fade-in">{children}</div>
+          {children}
         </main>
       </div>
       

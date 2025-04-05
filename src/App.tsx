@@ -1,5 +1,5 @@
 
-import React, { Suspense, lazy, useState, useEffect } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,10 +9,11 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { GolfStateProvider } from "./context/GolfStateContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
 import AuthRoute from "./components/AuthRoute";
+import './App.css';
 
 // Create a simpler loading component
 const LoadingFallback = () => (
-  <div className="h-screen w-screen flex items-center justify-center bg-white">
+  <div className="flex items-center justify-center h-[60vh]">
     <div className="text-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
     </div>
@@ -33,7 +34,6 @@ const Games = lazy(() => import("./pages/admin/Games"));
 const Scores = lazy(() => import("./pages/admin/Scores"));
 const AdminSettings = lazy(() => import("./pages/admin/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-import './App.css';
 
 // Create QueryClient with better error handling
 const queryClient = new QueryClient({
