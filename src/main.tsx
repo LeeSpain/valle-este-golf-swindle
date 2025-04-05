@@ -34,20 +34,6 @@ window.addEventListener('unhandledrejection', (event) => {
   console.error("Rejection stack:", event.reason?.stack);
 });
 
-// Function to check if browser console is open (for debugging)
-function isConsoleOpen() {
-  const startTime = new Date().getTime();
-  console.log("Console check");
-  console.log(startTime);
-  console.clear();
-  const endTime = new Date().getTime();
-  return endTime - startTime > 100;
-}
-
-// Check for browser debugging
-const isDebuggerOpen = isConsoleOpen();
-console.log("Debugger detected:", isDebuggerOpen);
-
 // Check if our root element exists
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -72,30 +58,7 @@ if (!rootElement) {
     
     root.render(
       <React.StrictMode>
-        <React.Suspense fallback={
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            width: '100vw'
-          }}>
-            <div style={{textAlign: 'center'}}>
-              <div style={{
-                width: '50px',
-                height: '50px',
-                border: '5px solid #f3f3f3',
-                borderTop: '5px solid #3dd374',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-                margin: '0 auto'
-              }}></div>
-              <p style={{marginTop: '20px'}}>Loading application...</p>
-            </div>
-          </div>
-        }>
-          <App />
-        </React.Suspense>
+        <App />
       </React.StrictMode>
     );
     
