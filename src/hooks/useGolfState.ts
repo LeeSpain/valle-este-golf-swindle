@@ -1,62 +1,11 @@
 
 import { useGolfStateContext } from '@/context/GolfStateContext';
-import { useRef } from 'react';
 
 export const useGolfState = () => {
-  const contextRef = useRef<ReturnType<typeof useGolfStateContext> | null>(null);
+  const context = useGolfStateContext();
   
-  try {
-    const context = useGolfStateContext();
-    
-    // Store the context in a ref to maintain stability
-    if (context && !contextRef.current) {
-      contextRef.current = context;
-    }
-    
-    // Use the ref value if available
-    if (contextRef.current) {
-      return contextRef.current;
-    }
-    
-    if (!context) {
-      console.error("useGolfState must be used within a GolfStateProvider");
-      return {
-        players: [],
-        games: [],
-        scores: [],
-        photos: [],
-        weather: null,
-        isLoading: false,
-        error: "Context not available",
-        getNextGame: () => null,
-        getPlayerById: () => null,
-        getGameById: () => null,
-        getScoresByGameId: () => [],
-        getScoresByPlayerId: () => [],
-        getPhotosByGameId: () => [],
-        
-        // Player functions
-        addPlayer: () => Promise.resolve(false),
-        updatePlayer: () => Promise.resolve(false),
-        deletePlayer: () => Promise.resolve(false),
-        
-        // Game functions
-        addGame: () => Promise.resolve(false),
-        updateGame: () => Promise.resolve(false),
-        deleteGame: () => Promise.resolve(false),
-        
-        // Score functions
-        saveScore: () => Promise.resolve(false),
-        verifyScore: () => Promise.resolve(false),
-        
-        // Photo functions
-        addPhoto: () => Promise.resolve(false)
-      };
-    }
-    
-    return context;
-  } catch (error) {
-    console.error("Error in useGolfState:", error);
+  if (!context) {
+    console.error("useGolfState must be used within a GolfStateProvider");
     return {
       players: [],
       games: [],
@@ -64,7 +13,7 @@ export const useGolfState = () => {
       photos: [],
       weather: null,
       isLoading: false,
-      error: error instanceof Error ? error.message : "Unknown error in useGolfState",
+      error: "Context not available",
       getNextGame: () => null,
       getPlayerById: () => null,
       getGameById: () => null,
@@ -90,4 +39,6 @@ export const useGolfState = () => {
       addPhoto: () => Promise.resolve(false)
     };
   }
+  
+  return context;
 };

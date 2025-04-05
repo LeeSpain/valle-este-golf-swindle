@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/api/authService';
 import { toast } from '@/hooks/use-toast';
@@ -10,16 +10,11 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
   const navigate = useNavigate();
-  const initializationAttempted = useRef(false);
   
-  // Initialize auth state - only run once
+  // Initialize auth state
   useEffect(() => {
-    // Skip if we've already attempted initialization
-    if (initializationAttempted.current) return;
-    
     const initializeAuth = async () => {
       console.log("Auth hook initializing...");
-      initializationAttempted.current = true;
       
       try {
         // Get user from localStorage
