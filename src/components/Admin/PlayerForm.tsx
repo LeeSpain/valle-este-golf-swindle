@@ -11,6 +11,7 @@ import { Users } from 'lucide-react';
 interface PlayerFormProps {
   player: Partial<Player>;
   isEditing: boolean;
+  isSubmitting?: boolean;
   onSubmit: (player: Partial<Player>) => void;
   onCancel: () => void;
 }
@@ -18,11 +19,11 @@ interface PlayerFormProps {
 const PlayerForm: React.FC<PlayerFormProps> = ({ 
   player, 
   isEditing, 
+  isSubmitting = false,
   onSubmit, 
   onCancel 
 }) => {
   const [formData, setFormData] = useState<Partial<Player>>(player);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // When player prop changes, update formData
   useEffect(() => {
@@ -47,13 +48,9 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
-    try {
+    if (!isSubmitting) {
       onSubmit(formData);
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      setIsSubmitting(false);
     }
   };
   

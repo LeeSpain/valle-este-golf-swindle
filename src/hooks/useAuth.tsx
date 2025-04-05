@@ -92,7 +92,7 @@ export function useAuth() {
     }
   }, [navigate]);
   
-  // Create a stable return value that never changes its shape
+  // Create a stable return value to avoid unnecessary re-renders
   const authContext = useMemo(() => ({
     user,
     isLoading,

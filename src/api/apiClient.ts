@@ -6,15 +6,58 @@ import { mockPlayers, mockGames, mockScores, mockPhotos, mockWeather } from "@/d
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.karensbarswinglegolf.com';
 
 /**
- * Generic API client with error handling
+ * Generic API client with error handling and MOCK responses for demo
  */
 export async function apiClient<T>(
   endpoint: string, 
   options: RequestInit = {}
 ): Promise<T> {
+  // Add a slight delay to simulate network latency (important for testing loading states)
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
   // For demo purposes, simulate API responses
   if (endpoint.startsWith('/players')) {
-    return mockPlayers as unknown as T;
+    // Handle player CRUD operations with proper mocking 
+    const method = options.method?.toUpperCase() || 'GET';
+    
+    // Check if it's a specific player operation
+    const idMatch = endpoint.match(/\/players\/([^\/]+)/);
+    const playerId = idMatch ? idMatch[1] : null;
+    
+    if (method === 'POST') {
+      // Create player
+      const playerData = options.body ? JSON.parse(options.body.toString()) : {};
+      const newPlayer = {
+        id: Date.now().toString(),
+        ...playerData
+      };
+      return newPlayer as unknown as T;
+    } 
+    else if (method === 'PUT' && playerId) {
+      // Update player
+      const playerData = options.body ? JSON.parse(options.body.toString()) : {};
+      const existingPlayer = mockPlayers.find(p => p.id === playerId);
+      if (!existingPlayer) {
+        throw new Error(`Player with ID ${playerId} not found`);
+      }
+      const updatedPlayer = {
+        ...existingPlayer,
+        ...playerData
+      };
+      return updatedPlayer as unknown as T;
+    }
+    else if (method === 'DELETE' && playerId) {
+      // Delete player - just return success
+      return true as unknown as T;
+    }
+    else {
+      // Regular GET request
+      if (playerId) {
+        const player = mockPlayers.find(p => p.id === playerId);
+        return (player || null) as unknown as T;
+      }
+      return mockPlayers as unknown as T;
+    }
   }
   if (endpoint.startsWith('/games')) {
     return mockGames as unknown as T;

@@ -8,11 +8,14 @@ import { useCallback } from 'react';
 export function usePlayers() {
   const { players, setPlayers } = useGolfStateContext();
   
-  // Updated to accept Partial<Player> and properly handle async operations
   const addPlayer = useCallback(async (playerData: Partial<Player>) => {
     try {
       console.log("Adding player:", playerData);
       const newPlayer = await createPlayer(playerData);
+      
+      if (!newPlayer) {
+        throw new Error("Failed to create player");
+      }
       
       // Update state only after API call succeeds
       setPlayers(prev => [...prev, newPlayer]);
@@ -40,6 +43,10 @@ export function usePlayers() {
     try {
       console.log("Updating player:", playerId, data);
       const updatedPlayer = await updatePlayer(playerId, data);
+      
+      if (!updatedPlayer) {
+        throw new Error("Failed to update player");
+      }
       
       // Update state only after API call succeeds
       setPlayers(prev => 

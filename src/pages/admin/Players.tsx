@@ -3,6 +3,7 @@ import React, { useState, useCallback } from 'react';
 import Layout from '@/components/Layout';
 import PlayerList from '@/components/Admin/PlayerList';
 import PlayerForm from '@/components/Admin/PlayerForm';
+import { usePlayers } from '@/hooks/usePlayers';
 import { useGolfState } from '@/hooks/useGolfState';
 import { Player } from '@/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -11,20 +12,23 @@ import { Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Players = () => {
-  // Get players data with useGolfState hook
-  const { players, isLoading, addPlayer, updatePlayer, deletePlayer } = useGolfState();
+  // Use the usePlayers hook instead of useGolfState directly
+  const { isLoading } = useGolfState();
+  const { players, addPlayer, updatePlayer, deletePlayer } = usePlayers();
   
   // Local state for UI
   const [showForm, setShowForm] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Debug output
   console.log("Players admin page state:", { 
     playersCount: players.length, 
     isLoading, 
     showForm, 
-    isEditing: !!editingPlayer 
+    isEditing: !!editingPlayer,
+    isSubmitting
   });
   
   // Memoized handlers to prevent unnecessary re-renders
@@ -42,83 +46,84 @@ const Players = () => {
     setDeleteConfirm(playerId);
   }, []);
   
-  const confirmDelete = useCallback(() => {
+  const confirmDelete = useCallback(async () => {
     if (deleteConfirm) {
-      deletePlayer(deleteConfirm)
-        .then(success => {
-          if (success) {
-            toast({
-              title: "Player deleted",
-              description: "Player has been removed successfully"
-            });
-          }
-        })
-        .catch(err => {
-          console.error("Error deleting player:", err);
+      try {
+        setIsSubmitting(true);
+        const success = await deletePlayer(deleteConfirm);
+        
+        if (success) {
           toast({
-            title: "Error",
-            description: "Failed to delete player",
-            variant: "destructive"
+            title: "Player deleted",
+            description: "Player has been removed successfully"
           });
+        }
+      } catch (err) {
+        console.error("Error deleting player:", err);
+        toast({
+          title: "Error",
+          description: "Failed to delete player",
+          variant: "destructive"
         });
-      setDeleteConfirm(null);
+      } finally {
+        setIsSubmitting(false);
+        setDeleteConfirm(null);
+      }
     }
   }, [deleteConfirm, deletePlayer]);
   
-  const handleFormSubmit = useCallback((playerData: Partial<Player>) => {
-    if (editingPlayer) {
-      updatePlayer(editingPlayer.id, playerData)
-        .then(success => {
-          if (success) {
-            toast({
-              title: "Player updated",
-              description: "Player details have been updated successfully"
-            });
-            setShowForm(false);
-          }
-        })
-        .catch(err => {
-          console.error("Error updating player:", err);
+  const handleFormSubmit = useCallback(async (playerData: Partial<Player>) => {
+    setIsSubmitting(true);
+    
+    try {
+      if (editingPlayer) {
+        const success = await updatePlayer(editingPlayer.id, playerData);
+        
+        if (success) {
           toast({
-            title: "Error",
-            description: "Failed to update player",
-            variant: "destructive"
+            title: "Player updated",
+            description: "Player details have been updated successfully"
           });
-        });
-    } else {
-      // Ensure all required fields are present for new players
-      const newPlayer = {
-        name: playerData.name || 'New Player',
-        email: playerData.email || 'player@example.com',
-        handicap: playerData.handicap || 0,
-        gender: playerData.gender || 'male',
-        preferredTee: playerData.preferredTee || 'yellow'
-      };
-      
-      addPlayer(newPlayer)
-        .then(success => {
-          if (success) {
-            toast({
-              title: "Player added",
-              description: "New player has been added successfully"
-            });
-            setShowForm(false);
-          }
-        })
-        .catch(err => {
-          console.error("Error adding player:", err);
+          setShowForm(false);
+        }
+      } else {
+        // Ensure all required fields are present for new players
+        const newPlayer: Partial<Player> = {
+          name: playerData.name || 'New Player',
+          email: playerData.email || 'player@example.com',
+          handicap: playerData.handicap || 0,
+          gender: playerData.gender || 'male',
+          preferredTee: playerData.preferredTee || 'yellow',
+          ...playerData
+        };
+        
+        const success = await addPlayer(newPlayer);
+        
+        if (success) {
           toast({
-            title: "Error",
-            description: "Failed to add player",
-            variant: "destructive"
+            title: "Player added",
+            description: "New player has been added successfully"
           });
-        });
+          setShowForm(false);
+        }
+      }
+    } catch (err) {
+      console.error("Error saving player:", err);
+      toast({
+        title: "Error",
+        description: "Failed to save player",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   }, [editingPlayer, updatePlayer, addPlayer]);
   
   const handleCancel = useCallback(() => {
-    setShowForm(false);
-  }, []);
+    if (!isSubmitting) {
+      setShowForm(false);
+    }
+  }, [isSubmitting]);
   
   return (
     <Layout isAdmin>
@@ -166,12 +171,13 @@ const Players = () => {
                 isEditing={!!editingPlayer}
                 onSubmit={handleFormSubmit}
                 onCancel={handleCancel}
+                isSubmitting={isSubmitting}
               />
             </CardContent>
           </Card>
         )}
         
-        <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+        <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
           <AlertDialogContent className="border-none">
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
@@ -180,9 +186,13 @@ const Players = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600">
-                Delete
+              <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={confirmDelete} 
+                className="bg-red-500 hover:bg-red-600"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Deleting..." : "Delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
