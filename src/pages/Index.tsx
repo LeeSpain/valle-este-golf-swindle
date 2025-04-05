@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,10 +16,9 @@ import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   console.log("Index component starts rendering");
-  const [renderError, setRenderError] = useState<string | null>(null);
   const { players, games, getNextGame, weather, scores, isLoading, error } = useGolfState();
   
-  // Welcome toast is now shown only once when the component mounts
+  // Welcome toast is shown only once when the component mounts - keep this hook ALWAYS in the same position
   React.useEffect(() => {
     toast({
       title: "Dashboard loaded",
@@ -32,7 +30,7 @@ const Index = () => {
     };
   }, []);
   
-  // Add visible error fallback for debugging purposes
+  // Handle error state
   if (error) {
     console.error("Dashboard error:", error);
     return (
@@ -42,7 +40,7 @@ const Index = () => {
     );
   }
   
-  // Add loading indicator
+  // Handle loading state
   if (isLoading) {
     console.log("Dashboard is loading...");
     return (
@@ -59,130 +57,106 @@ const Index = () => {
   
   console.log("Dashboard preparing to render content");
   
-  try {
-    let nextGame = null;
-    let currentPlayer = null;
-    
-    try {
-      // Safely attempt to get the next game
-      if (getNextGame && typeof getNextGame === 'function') {
-        nextGame = getNextGame();
-      }
-      console.log("Next game retrieved:", nextGame ? nextGame.id : "none");
-      
-      // Safely get current player
-      currentPlayer = players && players.length > 0 ? players[0] : null;
-      console.log("Current player:", currentPlayer ? currentPlayer.name : "none");
-    } catch (err) {
-      console.error("Error preparing data:", err);
-      // Continue rendering with null values rather than showing an error
-    }
-    
-    return (
-      <Layout>
-        <div className="space-y-6">
-          <DashboardHeader />
+  // Always initialize these variables to prevent conditional hook issues
+  const nextGame = getNextGame ? getNextGame() : null;
+  const currentPlayer = players && players.length > 0 ? players[0] : null;
+  
+  console.log("Next game retrieved:", nextGame ? nextGame.id : "none");
+  console.log("Current player:", currentPlayer ? currentPlayer.name : "none");
+  
+  return (
+    <Layout>
+      <div className="space-y-6">
+        <DashboardHeader />
 
-          {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Next Game Card */}
-            <Card className="md:col-span-2 shadow-md hover:shadow-lg transition-shadow border-gray-100">
-              <CardHeader className="pb-2 bg-gradient-to-r from-golf-green-light/10 to-transparent rounded-t-lg">
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-golf-green" />
-                  <span>Next Game</span>
-                </CardTitle>
-                <CardDescription>
-                  Upcoming game details and registration
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <NextGame 
-                  game={nextGame} 
-                  players={players || []} 
-                  isLoading={isLoading} 
-                />
-              </CardContent>
-              {nextGame && (
-                <CardFooter>
-                  <Button asChild variant="default" className="w-full sm:w-auto">
-                    <Link to={`/games/${nextGame.id}`}>
-                      View Game Details
-                    </Link>
-                  </Button>
-                </CardFooter>
-              )}
-            </Card>
-
-            {/* Weather Widget */}
-            <Card className="shadow-md hover:shadow-lg transition-shadow border-gray-100">
-              <CardHeader className="pb-2 bg-gradient-to-r from-golf-green-light/10 to-transparent rounded-t-lg">
-                <CardTitle className="flex items-center gap-2">
-                  <span>Weather</span>
-                </CardTitle>
-                <CardDescription>
-                  Current conditions at the course
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <Weather 
-                  weatherData={weather} 
-                  isLoading={isLoading} 
-                />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Stats Row */}
-          <StatsCards 
-            players={players ? players.length : 0} 
-            games={games ? games.length : 0} 
-          />
-
-          {/* Player Stats Card */}
-          <Card className="shadow-md hover:shadow-lg transition-shadow border-gray-100 mt-6">
+        {/* Main Dashboard Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Next Game Card */}
+          <Card className="md:col-span-2 shadow-md hover:shadow-lg transition-shadow border-gray-100">
             <CardHeader className="pb-2 bg-gradient-to-r from-golf-green-light/10 to-transparent rounded-t-lg">
               <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-golf-green" />
-                <span>Player Statistics</span>
+                <Calendar className="h-5 w-5 text-golf-green" />
+                <span>Next Game</span>
               </CardTitle>
               <CardDescription>
-                Top performers and recent achievements
+                Upcoming game details and registration
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <PlayerStats 
-                player={currentPlayer} 
-                scores={scores || []} 
+              <NextGame 
+                game={nextGame} 
+                players={players || []} 
                 isLoading={isLoading} 
               />
             </CardContent>
-            <CardFooter>
-              <Button asChild variant="outline">
-                <Link to="/leaderboard">
-                  View Full Leaderboard
-                </Link>
-              </Button>
-            </CardFooter>
+            {nextGame && (
+              <CardFooter>
+                <Button asChild variant="default" className="w-full sm:w-auto">
+                  <Link to={`/games/${nextGame.id}`}>
+                    View Game Details
+                  </Link>
+                </Button>
+              </CardFooter>
+            )}
           </Card>
 
-          {/* Feature Cards */}
-          <FeatureCards />
+          {/* Weather Widget */}
+          <Card className="shadow-md hover:shadow-lg transition-shadow border-gray-100">
+            <CardHeader className="pb-2 bg-gradient-to-r from-golf-green-light/10 to-transparent rounded-t-lg">
+              <CardTitle className="flex items-center gap-2">
+                <span>Weather</span>
+              </CardTitle>
+              <CardDescription>
+                Current conditions at the course
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <Weather 
+                weatherData={weather} 
+                isLoading={isLoading} 
+              />
+            </CardContent>
+          </Card>
         </div>
-      </Layout>
-    );
-  } catch (err) {
-    console.error("Error in Index component render:", err);
-    const errorMessage = err instanceof Error ? err.message : "Unknown error in Dashboard";
-    // Update state to trigger a re-render with the error
-    setRenderError(errorMessage);
-    
-    return (
-      <Layout>
-        <DashboardError error={errorMessage} />
-      </Layout>
-    );
-  }
+
+        {/* Stats Row */}
+        <StatsCards 
+          players={players ? players.length : 0} 
+          games={games ? games.length : 0} 
+        />
+
+        {/* Player Stats Card */}
+        <Card className="shadow-md hover:shadow-lg transition-shadow border-gray-100 mt-6">
+          <CardHeader className="pb-2 bg-gradient-to-r from-golf-green-light/10 to-transparent rounded-t-lg">
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-golf-green" />
+              <span>Player Statistics</span>
+            </CardTitle>
+            <CardDescription>
+              Top performers and recent achievements
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <PlayerStats 
+              player={currentPlayer} 
+              scores={scores || []} 
+              isLoading={isLoading} 
+            />
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline">
+              <Link to="/leaderboard">
+                View Full Leaderboard
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Feature Cards */}
+        <FeatureCards />
+      </div>
+    </Layout>
+  );
 };
 
 export default Index;

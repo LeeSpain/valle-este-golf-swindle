@@ -6,18 +6,16 @@ import { toast } from '@/hooks/use-toast';
 import { User } from '@/types';
 
 export function useAuth() {
-  // Use a ref for the initial state to avoid unnecessary re-renders
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
   const navigate = useNavigate();
   
-  // Initialize auth state only once
+  // Initialize auth state only once with a stable effect
   useEffect(() => {
     let isMounted = true;
+    
     const initializeAuth = async () => {
-      if (!isMounted) return;
-      
       try {
         // Get user from localStorage
         const storedUser = getCurrentUser();
@@ -25,15 +23,15 @@ export function useAuth() {
         // Only update state if the component is still mounted
         if (isMounted) {
           setUser(storedUser);
-          setAuthInitialized(true);
           setIsLoading(false);
+          setAuthInitialized(true);
         }
       } catch (error) {
         console.error("Error during auth initialization:", error);
         if (isMounted) {
           setUser(null);
-          setAuthInitialized(true);
           setIsLoading(false);
+          setAuthInitialized(true);
         }
       }
     };
@@ -91,8 +89,8 @@ export function useAuth() {
     });
   }, [navigate]);
   
-  // Memoize the return value to prevent unnecessary re-renders
-  return useMemo(() => ({
+  // Stabilize the return value
+  const authState = useMemo(() => ({
     user,
     isLoading,
     isAdmin: user?.role === 'admin',
@@ -100,4 +98,6 @@ export function useAuth() {
     logout,
     authInitialized
   }), [user, isLoading, login, logout, authInitialized]);
+
+  return authState;
 }

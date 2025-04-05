@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 export const useGolfState = () => {
   const context = useGolfStateContext();
   
-  // Create a fallback context that doesn't change between renders
+  // Create a stable fallback context 
   const fallbackContext = useMemo(() => ({
     players: [],
     games: [],
@@ -44,5 +44,6 @@ export const useGolfState = () => {
     return fallbackContext;
   }
   
+  // Return the actual context (no need to memoize here as the context itself is already memoized)
   return context;
 };

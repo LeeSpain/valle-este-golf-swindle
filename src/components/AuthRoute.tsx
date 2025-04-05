@@ -1,5 +1,5 @@
 
-import React, { ReactNode, memo } from 'react';
+import React, { ReactNode, memo, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -13,6 +13,16 @@ interface AuthRouteProps {
 // Memoize the component to prevent unnecessary re-renders
 const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = false }) => {
   const { user, isLoading, authInitialized } = useAuth();
+  
+  // Log render for debugging
+  useEffect(() => {
+    console.log("AuthRoute rendered with:", { 
+      user: user?.email, 
+      isLoading, 
+      authInitialized, 
+      requireAdmin
+    });
+  }, [user, isLoading, authInitialized, requireAdmin]);
   
   // If auth is still initializing, show a loading state
   if (!authInitialized || isLoading) {
@@ -52,6 +62,7 @@ const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = fal
   return <>{children}</>;
 });
 
+// Explicitly set display name for React DevTools and debugging
 AuthRoute.displayName = 'AuthRoute';
 
 export default AuthRoute;
