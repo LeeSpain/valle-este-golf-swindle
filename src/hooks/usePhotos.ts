@@ -4,9 +4,18 @@ import { PhotoItem } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { useGolfStateContext } from '@/context/GolfStateContext';
 import { uploadPhoto, deletePhoto as apiDeletePhoto } from '@/api/photoService';
+import { useRef, useEffect } from 'react';
 
 export function usePhotos() {
   const { photos, setPhotos } = useGolfStateContext();
+  const isMountedRef = useRef(true);
+  
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
   
   const addPhoto = async (photoData: Partial<PhotoItem>, file?: File) => {
     try {
@@ -14,7 +23,7 @@ export function usePhotos() {
         throw new Error('Either file or URL must be provided');
       }
       
-      let newPhoto: PhotoItem;
+      let newPhoto: PhotoItem | null = null;
       
       if (file) {
         // Create FormData for file upload
@@ -26,7 +35,12 @@ export function usePhotos() {
         if (photoData.uploadedBy) formData.append('uploadedBy', photoData.uploadedBy);
         
         // Upload the file
-        newPhoto = await uploadPhoto(formData);
+        try {
+          newPhoto = await uploadPhoto(formData);
+        } catch (error) {
+          console.error("Error uploading photo:", error);
+          throw error;
+        }
       } else {
         // Use provided URL (for testing purposes)
         newPhoto = {
@@ -39,21 +53,31 @@ export function usePhotos() {
         };
       }
       
-      setPhotos(prev => [...prev, newPhoto]);
-      
-      toast({
-        title: "Photo Uploaded",
-        description: "Your photo has been added to the wall!"
-      });
+      if (newPhoto && isMountedRef.current) {
+        setPhotos(prev => {
+          // Make sure we don't add duplicates
+          const exists = prev.some(p => p.id === newPhoto!.id);
+          return exists ? prev : [...prev, newPhoto!];
+        });
+        
+        toast({
+          title: "Photo Uploaded",
+          description: "Your photo has been added to the wall!"
+        });
+      }
       
       return newPhoto;
     } catch (error) {
       console.error('Error uploading photo:', error);
-      toast({
-        title: "Upload Failed",
-        description: "There was a problem uploading your photo. Please try again.",
-        variant: "destructive"
-      });
+      
+      if (isMountedRef.current) {
+        toast({
+          title: "Upload Failed",
+          description: "There was a problem uploading your photo. Please try again.",
+          variant: "destructive"
+        });
+      }
+      
       return null;
     }
   };
@@ -61,12 +85,15 @@ export function usePhotos() {
   const deletePhoto = async (photoId: string) => {
     try {
       await apiDeletePhoto(photoId);
-      setPhotos(prev => prev.filter(photo => photo.id !== photoId));
       
-      toast({
-        title: "Photo Deleted",
-        description: "The photo has been removed from the wall."
-      });
+      if (isMountedRef.current) {
+        setPhotos(prev => prev.filter(photo => photo.id !== photoId));
+        
+        toast({
+          title: "Photo Deleted",
+          description: "The photo has been removed from the wall."
+        });
+      }
       
       return true;
     } catch (error) {

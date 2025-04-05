@@ -12,7 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 interface PhotoUploadProps {
   games: Game[];
   players: { id: string; name: string }[];
-  onUpload: (photo: Partial<PhotoItem>) => void;
+  onUpload: (photo: Partial<PhotoItem>, file?: File) => void;
   onCancel: () => void;
 }
 
@@ -26,6 +26,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
   const [uploadedBy, setUploadedBy] = useState<string>('');
   const [caption, setCaption] = useState<string>('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -34,6 +35,8 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    setSelectedFile(file);
     
     const reader = new FileReader();
     reader.onload = () => {
@@ -51,20 +54,22 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
     
     setIsUploading(true);
     
-    // Simulate upload delay
-    setTimeout(() => {
-      const photoData: Partial<PhotoItem> = {
-        id: uuidv4(),
-        gameId: selectedGameId,
-        url: previewUrl,
-        caption: caption || undefined,
-        uploadedBy,
-        createdAt: new Date()
-      };
-      
-      onUpload(photoData);
-      setIsUploading(false);
-    }, 1000);
+    // Prepare the photo data
+    const photoData: Partial<PhotoItem> = {
+      id: uuidv4(),
+      gameId: selectedGameId,
+      url: previewUrl,
+      caption: caption || undefined,
+      uploadedBy,
+      createdAt: new Date()
+    };
+    
+    // Call onUpload with the file if available
+    onUpload(photoData, selectedFile || undefined);
+    
+    // Reset the form and notify parent component
+    setIsUploading(false);
+    onCancel();
   };
   
   return (
@@ -155,6 +160,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
                   className="absolute top-2 right-2 bg-white"
                   onClick={() => {
                     setPreviewUrl(null);
+                    setSelectedFile(null);
                     if (fileInputRef.current) {
                       fileInputRef.current.value = '';
                     }

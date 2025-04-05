@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PhotoGrid from './PhotoGrid';
 import PhotoUpload from './PhotoUpload';
@@ -11,7 +11,7 @@ interface PhotoWallProps {
   photos: PhotoItem[];
   games: Game[];
   players: { id: string; name: string }[];
-  onUploadPhoto: (photo: Partial<PhotoItem>) => void;
+  onUploadPhoto: (photo: Partial<PhotoItem>, file?: File) => void;
   isLoading: boolean;
 }
 
@@ -24,15 +24,36 @@ const PhotoWall: React.FC<PhotoWallProps> = ({
 }) => {
   const [selectedGameId, setSelectedGameId] = useState<string>('all');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [processedPhotos, setProcessedPhotos] = useState<PhotoItem[]>([]);
+  
+  // Process photos only once when photos prop changes
+  useEffect(() => {
+    if (photos && photos.length > 0) {
+      console.log(`Processing ${photos.length} photos`);
+      setProcessedPhotos(photos);
+    } else {
+      setProcessedPhotos([]);
+    }
+  }, [photos]);
   
   // Sort games by date (newest first)
-  const sortedGames = [...games]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const sortedGames = games && games.length > 0 
+    ? [...games].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    : [];
   
   // Filter photos by selected game
   const filteredPhotos = selectedGameId === 'all'
-    ? photos
-    : photos.filter(photo => photo.gameId === selectedGameId);
+    ? processedPhotos
+    : processedPhotos.filter(photo => photo.gameId === selectedGameId);
+  
+  useEffect(() => {
+    console.log("PhotoWall component state:", {
+      photoCount: photos?.length,
+      processedPhotoCount: processedPhotos?.length,
+      gameCount: games?.length, 
+      isLoading
+    });
+  }, [photos, processedPhotos, games, isLoading]);
   
   return (
     <Card className="w-full">
