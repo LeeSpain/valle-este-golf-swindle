@@ -1,6 +1,6 @@
 
 import React, { ReactNode, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
@@ -12,6 +12,7 @@ interface AuthRouteProps {
 
 const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false }) => {
   const { user, isLoading, authInitialized } = useAuth();
+  const location = useLocation();
   
   // Log auth state for debugging
   useEffect(() => {
@@ -20,20 +21,22 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
       role: user?.role || "none",
       isLoading, 
       authInitialized,
-      requireAdmin
+      requireAdmin,
+      pathname: location.pathname
     });
     
     return () => {
       console.log("AuthRoute unmounting", {
-        user: user?.email || "none"
+        user: user?.email || "none",
+        pathname: location.pathname
       });
     };
-  }, [user, isLoading, authInitialized, requireAdmin]);
+  }, [user, isLoading, authInitialized, requireAdmin, location.pathname]);
   
   // Don't render anything until auth is initialized to prevent flashing
   if (!authInitialized) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
           <p className="mt-4 text-golf-green">
@@ -47,7 +50,7 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   // If still loading, show a loading state
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
           <p className="mt-4 text-golf-green">

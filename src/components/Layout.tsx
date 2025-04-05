@@ -23,11 +23,12 @@ interface NavItemProps {
   label: string;
   isActive: boolean;
   isAdmin?: boolean;
+  onClick?: () => void;
 }
 
-const NavItem = ({ to, icon, label, isActive, isAdmin = false }: NavItemProps) => {
+const NavItem = ({ to, icon, label, isActive, isAdmin = false, onClick }: NavItemProps) => {
   return (
-    <Link to={to} className="w-full">
+    <Link to={to} className="w-full" onClick={onClick}>
       <Button
         variant="ghost"
         className={cn(
@@ -57,7 +58,11 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
   
-  console.log("Layout rendering with user:", user);
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+  
+  console.log("Layout rendering with user:", user, "path:", location.pathname);
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -99,7 +104,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 mt-1" align="end">
+                <DropdownMenuContent className="w-56 mt-1 bg-white" align="end">
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">{user.email}</p>
@@ -155,24 +160,28 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
               icon={<Calendar className="h-5 w-5" />} 
               label="Dashboard" 
               isActive={location.pathname === '/'} 
+              onClick={closeMobileMenu}
             />
             <NavItem 
               to="/leaderboard" 
               icon={<Award className="h-5 w-5" />} 
               label="Leaderboard" 
               isActive={location.pathname === '/leaderboard'} 
+              onClick={closeMobileMenu}
             />
             <NavItem 
               to="/photos" 
               icon={<Image className="h-5 w-5" />} 
               label="Photo Wall" 
               isActive={location.pathname === '/photos'} 
+              onClick={closeMobileMenu}
             />
             <NavItem 
               to="/help" 
               icon={<HelpCircle className="h-5 w-5" />} 
               label="Help & FAQ" 
               isActive={location.pathname === '/help'} 
+              onClick={closeMobileMenu}
             />
             {isAdmin && (
               <>
@@ -187,6 +196,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                   label="Admin Dashboard" 
                   isActive={location.pathname === '/admin'} 
                   isAdmin
+                  onClick={closeMobileMenu}
                 />
                 <NavItem 
                   to="/admin/players" 
@@ -194,6 +204,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                   label="Players" 
                   isActive={location.pathname === '/admin/players'} 
                   isAdmin
+                  onClick={closeMobileMenu}
                 />
                 <NavItem 
                   to="/admin/games" 
@@ -201,6 +212,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                   label="Games" 
                   isActive={location.pathname === '/admin/games'} 
                   isAdmin
+                  onClick={closeMobileMenu}
                 />
                 <NavItem 
                   to="/admin/scores" 
@@ -208,6 +220,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                   label="Scores" 
                   isActive={location.pathname === '/admin/scores'} 
                   isAdmin
+                  onClick={closeMobileMenu}
                 />
                 <NavItem 
                   to="/admin/settings" 
@@ -215,6 +228,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                   label="Settings" 
                   isActive={location.pathname === '/admin/settings'} 
                   isAdmin
+                  onClick={closeMobileMenu}
                 />
               </>
             )}
@@ -239,24 +253,24 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
       {/* Mobile bottom navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-30">
         <div className="flex justify-around p-2">
-          <Link to="/" className="flex flex-col items-center p-2">
+          <Link to="/" className="flex flex-col items-center p-2" onClick={closeMobileMenu}>
             <Calendar className={`h-6 w-6 ${location.pathname === '/' ? 'text-golf-green' : 'text-gray-500'}`} />
             <span className="text-xs mt-1">Home</span>
           </Link>
-          <Link to="/leaderboard" className="flex flex-col items-center p-2">
+          <Link to="/leaderboard" className="flex flex-col items-center p-2" onClick={closeMobileMenu}>
             <Award className={`h-6 w-6 ${location.pathname === '/leaderboard' ? 'text-golf-green' : 'text-gray-500'}`} />
             <span className="text-xs mt-1">Leaderboard</span>
           </Link>
-          <Link to="/photos" className="flex flex-col items-center p-2">
+          <Link to="/photos" className="flex flex-col items-center p-2" onClick={closeMobileMenu}>
             <Image className={`h-6 w-6 ${location.pathname === '/photos' ? 'text-golf-green' : 'text-gray-500'}`} />
             <span className="text-xs mt-1">Photos</span>
           </Link>
-          <Link to="/help" className="flex flex-col items-center p-2">
+          <Link to="/help" className="flex flex-col items-center p-2" onClick={closeMobileMenu}>
             <HelpCircle className={`h-6 w-6 ${location.pathname === '/help' ? 'text-golf-green' : 'text-gray-500'}`} />
             <span className="text-xs mt-1">Help</span>
           </Link>
           {isAdmin && (
-            <Link to="/admin" className="flex flex-col items-center p-2">
+            <Link to="/admin" className="flex flex-col items-center p-2" onClick={closeMobileMenu}>
               <LayoutDashboard className={`h-6 w-6 ${location.pathname.startsWith('/admin') ? 'text-golf-green' : 'text-gray-500'}`} />
               <span className="text-xs mt-1">Admin</span>
             </Link>

@@ -1,5 +1,7 @@
+
 import React, { Suspense, lazy } from 'react';
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -52,11 +54,9 @@ const App = () => {
         <TooltipProvider>
           <BrowserRouter>
             <GolfStateProvider>
-              
-              
-                
-              <Suspense fallback={<LoadingFallback />}>
-                <Routes>
+              <div className="min-h-screen flex flex-col"> {/* Added a container to fix layout issues */}
+                <Suspense fallback={<LoadingFallback />}>
+                  <Routes>
                     {/* Public route */}
                     <Route path="/login" element={<Login />} />
                     
@@ -187,6 +187,9 @@ const App = () => {
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
+              </div>
+              {/* Toaster for notifications */}
+              <Toaster />
             </GolfStateProvider>
           </BrowserRouter>
         </TooltipProvider>

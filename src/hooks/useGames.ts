@@ -1,227 +1,219 @@
 
-import { Game } from '@/types';
-import { toast } from '@/hooks/use-toast';
-import { useGolfStateContext } from '@/context/GolfStateContext';
 import { useCallback } from 'react';
-import { useNotificationsContext } from '@/context/NotificationsContext';
-import { createGame, updateGame, deleteGame } from '@/api/gameService';
+import { useGolfState } from './useGolfState';
+import { Game, Player } from '@/types';
+import { gameService } from '@/api/gameService';
+import { toast } from '@/hooks/use-toast';
 
 export function useGames() {
-  const { games, setGames, scores } = useGolfStateContext();
-  const notifications = useNotificationsContext();
-  
-  // Find next game
-  const getNextGame = useCallback((): Game | null => {
-    if (!games || games.length === 0) return null;
-    
-    const now = new Date();
-    const upcomingGames = games
-      .filter(game => new Date(game.date) >= now)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
-    return upcomingGames.length > 0 ? upcomingGames[0] : null;
-  }, [games]);
-  
-  // Find latest completed game
-  const getLatestCompletedGame = useCallback((): Game | null => {
-    if (!games || games.length === 0) return null;
-    
-    const now = new Date();
-    const completedGames = games
-      .filter(game => new Date(game.date) < now && game.isComplete)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    
-    return completedGames.length > 0 ? completedGames[0] : null;
-  }, [games]);
-  
-  // Get all checked-in players for a game
-  const getCheckedInPlayers = useCallback((gameId: string): string[] => {
+  const { 
+    games, 
+    setGames, 
+    addGame: addGameToState, 
+    updateGame: updateGameInState,
+    deleteGame: deleteGameFromState,
+    isLoading 
+  } = useGolfState();
+
+  // Retrieve games
+  const getGame = useCallback((gameId: string) => {
     const game = games.find(g => g.id === gameId);
-    if (!game || !game.playerStatus) return [];
-    
-    return game.playerStatus
-      .filter(status => status.checkedIn)
-      .map(status => status.playerId);
+    return game || null;
   }, [games]);
-  
-  // Add a new game with proper playerStatus initialization
+
+  // Add a new game
   const addGame = useCallback(async (gameData: Partial<Game>) => {
     try {
-      console.log("Adding game:", gameData);
+      console.log('Adding new game:', gameData);
       
-      // Ensure playerStatus is properly initialized for all selected players
-      if (gameData.players && (!gameData.playerStatus || gameData.playerStatus.length === 0)) {
-        gameData.playerStatus = gameData.players.map(playerId => ({
-          playerId,
-          checkedIn: false,
-          hasPaid: false
-        }));
-      }
-      
-      const newGame = await createGame(gameData);
+      // Create with API
+      const newGame = await gameService.createGame(gameData);
       
       if (newGame) {
-        // Make sure playerStatus exists before adding to state
-        if (!newGame.playerStatus && newGame.players && newGame.players.length > 0) {
-          newGame.playerStatus = newGame.players.map(playerId => ({
-            playerId,
-            checkedIn: false,
-            hasPaid: false
-          }));
-        }
+        // Update local state
+        addGameToState(newGame);
         
-        setGames(prev => [...prev, newGame]);
-        
+        // Show success notification
         toast({
-          title: "Game Scheduled",
-          description: `New game has been scheduled for ${new Date(newGame.date).toLocaleDateString()}.`
+          title: "Game Created",
+          description: "New game has been scheduled successfully"
         });
         
-        // Notify about the upcoming game
-        if (notifications) {
-          notifications.notifyUpcomingGame(newGame.date.toString(), newGame.teeTime);
-        }
+        return true;
       }
-      
-      return newGame;
+      return false;
     } catch (error) {
       console.error('Error adding game:', error);
       
+      // Show error notification
       toast({
         title: "Error",
-        description: "Failed to schedule game. Please try again.",
-        variant: "destructive"
-      });
-      
-      return null;
-    }
-  }, [setGames, notifications]);
-  
-  const updateGameById = useCallback(async (gameId: string, data: Partial<Game>) => {
-    try {
-      console.log("Updating game:", gameId, data);
-      
-      const gameBeforeUpdate = games.find(game => game.id === gameId);
-      if (!gameBeforeUpdate) {
-        console.error('Game not found:', gameId);
-        return null;
-      }
-      
-      // Ensure playerStatus is maintained or updated properly
-      if (data.players && !data.playerStatus) {
-        // Update playerStatus based on new players
-        const existingPlayerIds = gameBeforeUpdate.playerStatus?.map(p => p.playerId) || [];
-        const newPlayerIds = data.players.filter(id => !existingPlayerIds.includes(id));
-        
-        data.playerStatus = [
-          ...(gameBeforeUpdate.playerStatus || []),
-          ...newPlayerIds.map(playerId => ({
-            playerId,
-            checkedIn: false,
-            hasPaid: false
-          }))
-        ].filter(status => data.players?.includes(status.playerId));
-      }
-      
-      const updatedGame = await updateGame(gameId, data);
-      
-      if (updatedGame) {
-        setGames(prev => 
-          prev.map(game => 
-            game.id === gameId ? updatedGame : game
-          )
-        );
-        
-        // Different toast messages based on what was updated
-        if (data.isComplete) {
-          toast({
-            title: "Game Completed",
-            description: `The game has been marked as complete.`
-          });
-        } else {
-          toast({
-            title: "Game Updated",
-            description: `Game details have been updated.`
-          });
-        }
-        
-        // If date or tee time changed, send notification
-        if (notifications && gameBeforeUpdate) {
-          if (data.date !== gameBeforeUpdate.date || data.teeTime !== gameBeforeUpdate.teeTime) {
-            notifications.notifyUpcomingGame(
-              updatedGame.date.toString(), 
-              updatedGame.teeTime
-            );
-          }
-        }
-      }
-      
-      return updatedGame;
-    } catch (error) {
-      console.error('Error updating game:', error);
-      
-      toast({
-        title: "Error",
-        description: "Failed to update game. Please try again.",
-        variant: "destructive"
-      });
-      
-      return null;
-    }
-  }, [games, setGames, notifications]);
-  
-  const deleteGameById = useCallback(async (gameId: string) => {
-    try {
-      console.log("Deleting game:", gameId);
-      
-      // Check if game has scores
-      const gameScores = scores.filter(score => score.gameId === gameId);
-      
-      if (gameScores.length > 0) {
-        toast({
-          title: "Cannot Delete Game",
-          description: "This game has scores recorded and cannot be deleted.",
-          variant: "destructive"
-        });
-        return false;
-      }
-      
-      const gameToDelete = games.find(g => g.id === gameId);
-      if (!gameToDelete) {
-        console.error('Game not found:', gameId);
-        return false;
-      }
-      
-      await deleteGame(gameId);
-      
-      setGames(prev => prev.filter(game => game.id !== gameId));
-      
-      toast({
-        title: "Game Deleted",
-        description: `Game for ${new Date(gameToDelete.date).toLocaleDateString()} has been removed.`
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('Error deleting game:', error);
-      
-      toast({
-        title: "Error",
-        description: "Failed to delete game. Please try again.",
+        description: "Failed to create game",
         variant: "destructive"
       });
       
       return false;
     }
-  }, [games, scores, setGames]);
+  }, [addGameToState]);
+
+  // Update an existing game
+  const updateGame = useCallback(async (gameId: string, gameData: Partial<Game>) => {
+    try {
+      console.log('Updating game:', gameId, gameData);
+      
+      // Update with API
+      const updatedGame = await gameService.updateGame(gameId, gameData);
+      
+      if (updatedGame) {
+        // Update local state
+        updateGameInState(gameId, updatedGame);
+        
+        // Show success notification
+        toast({
+          title: "Game Updated",
+          description: "Game details have been updated successfully"
+        });
+        
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating game:', error);
+      
+      // Show error notification
+      toast({
+        title: "Error",
+        description: "Failed to update game",
+        variant: "destructive"
+      });
+      
+      return false;
+    }
+  }, [updateGameInState]);
+
+  // Delete a game
+  const deleteGame = useCallback(async (gameId: string) => {
+    try {
+      console.log('Deleting game:', gameId);
+      
+      // Delete with API
+      const success = await gameService.deleteGame(gameId);
+      
+      if (success) {
+        // Update local state
+        deleteGameFromState(gameId);
+        
+        // Show success notification
+        toast({
+          title: "Game Deleted",
+          description: "Game has been removed successfully"
+        });
+        
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error deleting game:', error);
+      
+      // Show error notification
+      toast({
+        title: "Error",
+        description: "Failed to delete game",
+        variant: "destructive"
+      });
+      
+      return false;
+    }
+  }, [deleteGameFromState]);
+
+  // Add a player to a game
+  const addPlayerToGame = useCallback(async (gameId: string, playerId: string) => {
+    try {
+      console.log('Adding player to game:', gameId, playerId);
+      
+      // Update with API
+      const success = await gameService.addPlayerToGame(gameId, playerId);
+      
+      if (success) {
+        // Get updated game data
+        const updatedGame = await gameService.getGame(gameId);
+        
+        if (updatedGame) {
+          // Update local state
+          updateGameInState(gameId, updatedGame);
+          
+          // Show success notification
+          toast({
+            title: "Player Added",
+            description: "Player has been added to the game"
+          });
+          
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error('Error adding player to game:', error);
+      
+      // Show error notification
+      toast({
+        title: "Error",
+        description: "Failed to add player to game",
+        variant: "destructive"
+      });
+      
+      return false;
+    }
+  }, [updateGameInState]);
+
+  // Remove a player from a game
+  const removePlayerFromGame = useCallback(async (gameId: string, playerId: string) => {
+    try {
+      console.log('Removing player from game:', gameId, playerId);
+      
+      // Update with API
+      const success = await gameService.removePlayerFromGame(gameId, playerId);
+      
+      if (success) {
+        // Get updated game data
+        const updatedGame = await gameService.getGame(gameId);
+        
+        if (updatedGame) {
+          // Update local state
+          updateGameInState(gameId, updatedGame);
+          
+          // Show success notification
+          toast({
+            title: "Player Removed",
+            description: "Player has been removed from the game"
+          });
+          
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error('Error removing player from game:', error);
+      
+      // Show error notification
+      toast({
+        title: "Error",
+        description: "Failed to remove player from game",
+        variant: "destructive"
+      });
+      
+      return false;
+    }
+  }, [updateGameInState]);
 
   return {
     games,
-    getNextGame,
-    getLatestCompletedGame,
-    getCheckedInPlayers,
+    getGame,
     addGame,
-    updateGame: updateGameById,
-    deleteGame: deleteGameById
+    updateGame,
+    deleteGame,
+    addPlayerToGame,
+    removePlayerFromGame,
+    isLoading
   };
 }
