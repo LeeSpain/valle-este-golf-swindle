@@ -1,5 +1,5 @@
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,65 +18,77 @@ import { toast } from '@/hooks/use-toast';
 const Index = () => {
   // Add more logging to identify rendering issues
   console.log("Index component starts rendering");
+  
+  // Track mount state
+  const isMounted = useRef(true);
+  
+  // Get data from GolfState
   const { players, games, getNextGame, weather, scores, isLoading, error } = useGolfState();
   
   // Initialize all data once - this prevents conditional hooks
-  const nextGame = useMemo(() => getNextGame ? getNextGame() : null, [getNextGame]);
-  const currentPlayer = useMemo(() => 
-    players && players.length > 0 ? players[0] : null, 
-  [players]);
+  const nextGame = useMemo(() => {
+    console.log("Index calculating nextGame, getNextGame exists:", !!getNextGame);
+    return getNextGame ? getNextGame() : null;
+  }, [getNextGame]);
+  
+  const currentPlayer = useMemo(() => {
+    console.log("Index calculating currentPlayer, players:", players?.length || 0);
+    return players && players.length > 0 ? players[0] : null;
+  }, [players]);
   
   console.log("Index component data:", { 
     playersCount: players?.length || 0,
     gamesCount: games?.length || 0,
     nextGameId: nextGame?.id || "none",
     currentPlayerName: currentPlayer?.name || "none",
-    isLoading
+    isLoading,
+    isPageMounted: isMounted.current
   });
   
-  // Welcome toast is shown only once when the component mounts
+  // Track mount/unmount for debugging
   useEffect(() => {
-    // Small delay to prevent toast from showing during navigation
+    isMounted.current = true;
+    console.log("Index component mounted");
+    
+    // Welcome toast is shown only once when the component mounts
     const timer = setTimeout(() => {
-      toast({
-        title: "Dashboard loaded",
-        description: "Welcome to Karen's Bar Golf Swindle",
-      });
+      if (isMounted.current) {
+        toast({
+          title: "Dashboard loaded",
+          description: "Welcome to Karen's Bar Golf Swindle",
+        });
+      }
     }, 500);
     
     return () => {
+      isMounted.current = false;
       clearTimeout(timer);
       console.log("Index component unmounted");
     };
   }, []);
   
-  // Handle loading state with a dedicated component
-  if (isLoading) {
-    console.log("Dashboard is loading...");
-    return (
-      <Layout>
+  // Create render content separate from component return to ensure stable rendering
+  const renderContent = () => {
+    // Handle loading state with a dedicated component
+    if (isLoading) {
+      console.log("Dashboard is loading...");
+      return (
         <div className="flex items-center justify-center h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
             <p className="mt-4 text-golf-green">Loading dashboard...</p>
           </div>
         </div>
-      </Layout>
-    );
-  }
-  
-  // Handle error state
-  if (error) {
-    console.error("Dashboard error:", error);
+      );
+    }
+    
+    // Handle error state
+    if (error) {
+      console.error("Dashboard error:", error);
+      return <DashboardError error={error} />;
+    }
+    
     return (
-      <Layout>
-        <DashboardError error={error} />
-      </Layout>
-    );
-  }
-  
-  return (
-    <Layout>
       <div className="space-y-6">
         <DashboardHeader />
 
@@ -166,8 +178,18 @@ const Index = () => {
         {/* Feature Cards */}
         <FeatureCards />
       </div>
+    );
+  };
+  
+  console.log("Index component about to return Layout");
+  
+  // Always render inside Layout so navigation remains visible
+  return (
+    <Layout>
+      {renderContent()}
     </Layout>
   );
 };
 
+// Use React.memo to prevent unnecessary re-renders
 export default React.memo(Index);

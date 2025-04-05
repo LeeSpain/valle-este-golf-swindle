@@ -1,14 +1,27 @@
 
 import { useGolfStateContext } from '@/context/GolfStateContext';
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useRef, useEffect } from 'react';
 
 export const useGolfState = () => {
+  // Track if the hook is mounted to prevent state updates after unmount
+  const isMountedRef = useRef(true);
+  
+  useEffect(() => {
+    isMountedRef.current = true;
+    console.log("useGolfState mounted");
+    
+    return () => {
+      isMountedRef.current = false;
+      console.log("useGolfState unmounted");
+    };
+  }, []);
+  
   // Get the raw context
   const context = useGolfStateContext();
   
   // If context is missing, create a stable empty context instead of throwing
   const stableContext = useMemo(() => {
-    if (!context) {
+    if (!context && isMountedRef.current) {
       console.error("useGolfState must be used within a GolfStateProvider");
       
       // Return a stable empty context that won't change
@@ -33,21 +46,21 @@ export const useGolfState = () => {
         getPhotosByGameId: () => [],
         
         // Player functions
-        addPlayer: useCallback(() => Promise.resolve(false), []),
-        updatePlayer: useCallback(() => Promise.resolve(false), []),
-        deletePlayer: useCallback(() => Promise.resolve(false), []),
+        addPlayer: () => Promise.resolve(false),
+        updatePlayer: () => Promise.resolve(false),
+        deletePlayer: () => Promise.resolve(false),
         
         // Game functions
-        addGame: useCallback(() => Promise.resolve(false), []),
-        updateGame: useCallback(() => Promise.resolve(false), []),
-        deleteGame: useCallback(() => Promise.resolve(false), []),
+        addGame: () => Promise.resolve(false),
+        updateGame: () => Promise.resolve(false),
+        deleteGame: () => Promise.resolve(false),
         
         // Score functions
-        saveScore: useCallback(() => Promise.resolve(false), []),
-        verifyScore: useCallback(() => Promise.resolve(false), []),
+        saveScore: () => Promise.resolve(false),
+        verifyScore: () => Promise.resolve(false),
         
         // Photo functions
-        addPhoto: useCallback(() => Promise.resolve(false), [])
+        addPhoto: () => Promise.resolve(false)
       };
     }
     

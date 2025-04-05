@@ -1,5 +1,5 @@
 
-import React, { ReactNode, memo, useEffect, useState } from 'react';
+import React, { ReactNode, memo, useEffect, useState, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -13,40 +13,74 @@ interface AuthRouteProps {
 // Memoize the component to prevent unnecessary re-renders
 const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = false }) => {
   const { user, isLoading, authInitialized } = useAuth();
+  
+  // Use ref to track component mounted state
+  const isMountedRef = useRef(true);
+  
   // Add a local loading state to prevent flashing
   const [renderContent, setRenderContent] = useState(false);
   
   // Only render content after a brief delay to prevent flashing
   useEffect(() => {
     const timer = setTimeout(() => {
-      setRenderContent(true);
-    }, 50);
+      if (isMountedRef.current) {
+        setRenderContent(true);
+      }
+    }, 100); // Increased delay
     
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      isMountedRef.current = false;
+    };
   }, []);
   
-  // Log render for debugging
+  // Debug logging to track component lifecycle
   useEffect(() => {
     console.log("AuthRoute rendered with:", { 
       userEmail: user?.email, 
       isLoading, 
       authInitialized, 
       requireAdmin,
-      renderContent
+      renderContent,
+      isMounted: isMountedRef.current
     });
     
     return () => {
       console.log("AuthRoute unmounted");
+      isMountedRef.current = false;
     };
   }, [user, isLoading, authInitialized, requireAdmin, renderContent]);
   
-  // Don't render anything until our local state says we're ready
-  if (!renderContent) {
-    return null;
+  // Don't render anything until auth is initialized
+  if (!authInitialized) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
+          <p className="mt-4 text-golf-green">
+            Initializing...
+          </p>
+        </div>
+      </div>
+    );
   }
   
-  // If auth is still initializing, show a loading state
-  if (!authInitialized || isLoading) {
+  // Don't render content until our local state says we're ready
+  if (!renderContent) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
+          <p className="mt-4 text-golf-green">
+            Preparing content...
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
+  // If still loading, show a loading state
+  if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
