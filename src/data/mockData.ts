@@ -1,3 +1,4 @@
+
 import { Player, Game, Score, WeatherData, PhotoItem } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -78,6 +79,12 @@ export const mockGames: Game[] = [
     teeTime: '10:30',
     notes: 'Meet at the clubhouse at 10:00',
     players: ['1', '2', '3', '4'],
+    playerStatus: [
+      { playerId: '1', checkedIn: true, hasPaid: true },
+      { playerId: '2', checkedIn: true, hasPaid: true },
+      { playerId: '3', checkedIn: true, hasPaid: true },
+      { playerId: '4', checkedIn: true, hasPaid: true }
+    ],
     isVerified: true,
     isComplete: true,
     createdAt: new Date(twoWeeksAgo.getTime() - 7 * 24 * 60 * 60 * 1000),
@@ -89,6 +96,12 @@ export const mockGames: Game[] = [
     courseSide: 'back9',
     teeTime: '10:30',
     players: ['1', '3', '4', '5'],
+    playerStatus: [
+      { playerId: '1', checkedIn: true, hasPaid: true },
+      { playerId: '3', checkedIn: true, hasPaid: true },
+      { playerId: '4', checkedIn: true, hasPaid: true },
+      { playerId: '5', checkedIn: true, hasPaid: true }
+    ],
     isVerified: true,
     isComplete: true,
     createdAt: new Date(lastSunday.getTime() - 7 * 24 * 60 * 60 * 1000),
@@ -101,6 +114,12 @@ export const mockGames: Game[] = [
     teeTime: '10:30',
     notes: 'Weather looks great this week!',
     players: ['1', '2', '3', '5'],
+    playerStatus: [
+      { playerId: '1', checkedIn: false, hasPaid: false },
+      { playerId: '2', checkedIn: false, hasPaid: false },
+      { playerId: '3', checkedIn: false, hasPaid: false },
+      { playerId: '5', checkedIn: false, hasPaid: false }
+    ],
     isVerified: false,
     isComplete: false,
     createdAt: new Date(),
@@ -334,6 +353,12 @@ export const createGame = (data: Partial<Game>): Game => {
     teeTime: data.teeTime || '10:30',
     notes: data.notes,
     players: data.players || [],
+    playerStatus: data.playerStatus || 
+      (data.players ? data.players.map(playerId => ({
+        playerId,
+        checkedIn: false,
+        hasPaid: false
+      })) : []),
     isVerified: false,
     isComplete: false,
     createdAt: now,

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Player, Game, Score, WeatherData, PhotoItem } from '@/types';
 import { getPlayers } from '@/api/playerService';
@@ -55,6 +56,11 @@ const mockGames: Game[] = [
     teeTime: '10:00',
     courseSide: 'front9',
     players: ['p1', 'p2', 'p3'],
+    playerStatus: [
+      { playerId: 'p1', checkedIn: false, hasPaid: false },
+      { playerId: 'p2', checkedIn: false, hasPaid: false },
+      { playerId: 'p3', checkedIn: false, hasPaid: false }
+    ],
     isComplete: false,
     isVerified: false,
     notes: 'Bring extra balls, water hazards are tricky on holes 2 and 7.',
@@ -67,6 +73,10 @@ const mockGames: Game[] = [
     teeTime: '14:30',
     courseSide: 'back9',
     players: ['p1', 'p3'],
+    playerStatus: [
+      { playerId: 'p1', checkedIn: false, hasPaid: false },
+      { playerId: 'p3', checkedIn: false, hasPaid: false }
+    ],
     isComplete: false,
     isVerified: false,
     notes: '',
