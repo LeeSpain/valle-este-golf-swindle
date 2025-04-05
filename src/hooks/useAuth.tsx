@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/api/authService';
 import { toast } from '@/hooks/use-toast';
@@ -7,32 +7,38 @@ import { User } from '@/types';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
   const navigate = useNavigate();
+  const initializationAttempted = useRef(false);
   
-  // Initialize auth state
+  // Initialize auth state - only run once
   useEffect(() => {
-    if (authInitialized) return;
+    // Skip if we've already attempted initialization
+    if (initializationAttempted.current) return;
     
-    console.log("Auth hook initializing...");
-    setIsLoading(true);
-    
-    try {
-      // Get user from localStorage on initial load
-      const storedUser = getCurrentUser();
-      console.log("User from localStorage:", storedUser);
+    const initializeAuth = async () => {
+      console.log("Auth hook initializing...");
+      initializationAttempted.current = true;
       
-      // Set user state from localStorage
-      setUser(storedUser);
-    } catch (error) {
-      console.error("Error during auth initialization:", error);
-      setUser(null);
-    } finally {
-      setAuthInitialized(true);
-      setIsLoading(false);
-      console.log("Auth initialization complete");
-    }
+      try {
+        // Get user from localStorage
+        const storedUser = getCurrentUser();
+        console.log("User from localStorage:", storedUser);
+        
+        // Set user state from localStorage
+        setUser(storedUser);
+      } catch (error) {
+        console.error("Error during auth initialization:", error);
+        setUser(null);
+      } finally {
+        setAuthInitialized(true);
+        setIsLoading(false);
+        console.log("Auth initialization complete");
+      }
+    };
+    
+    initializeAuth();
   }, []);
   
   // Login function

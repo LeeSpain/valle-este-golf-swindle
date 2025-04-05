@@ -2,11 +2,13 @@
 import React from 'react';
 
 const DashboardHeader: React.FC = () => {
+  console.log("DashboardHeader rendering");
+  
   return (
     <div className="flex justify-between items-center mb-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-golf-green to-golf-green-light">
-          Welcome to Karen's Bar Golf Swindle
+        <h1 className="text-3xl font-bold tracking-tight text-golf-green">
+          Karen's Bar Golf Swindle
         </h1>
         <p className="text-muted-foreground mt-1">
           Track scores, view leaderboards, and stay connected with your golfing community
@@ -23,4 +25,4 @@ const DashboardHeader: React.FC = () => {
   );
 };
 
-export default DashboardHeader;
+export default React.memo(DashboardHeader);

@@ -1,5 +1,5 @@
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -12,15 +12,26 @@ interface AuthRouteProps {
 
 const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false }) => {
   const { user, isLoading, authInitialized } = useAuth();
+  const [renderContent, setRenderContent] = useState(false);
+  
+  // Only render content after a brief delay to ensure stability
+  useEffect(() => {
+    if (authInitialized && !isLoading) {
+      const timer = setTimeout(() => {
+        setRenderContent(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [authInitialized, isLoading]);
   
   // If auth is still initializing, show a loading state
-  if (isLoading || !authInitialized) {
+  if (isLoading || !authInitialized || !renderContent) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
           <p className="mt-4 text-golf-green">
-            {!authInitialized ? "Initializing application..." : "Loading..."}
+            Loading...
           </p>
         </div>
       </div>

@@ -1,9 +1,22 @@
 
 import { useGolfStateContext } from '@/context/GolfStateContext';
+import { useRef } from 'react';
 
 export const useGolfState = () => {
+  const contextRef = useRef<ReturnType<typeof useGolfStateContext> | null>(null);
+  
   try {
     const context = useGolfStateContext();
+    
+    // Store the context in a ref to maintain stability
+    if (context && !contextRef.current) {
+      contextRef.current = context;
+    }
+    
+    // Use the ref value if available
+    if (contextRef.current) {
+      return contextRef.current;
+    }
     
     if (!context) {
       console.error("useGolfState must be used within a GolfStateProvider");
