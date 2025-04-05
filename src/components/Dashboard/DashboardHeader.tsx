@@ -14,13 +14,7 @@ const DashboardHeader: React.FC = () => {
           Track scores, view leaderboards, and stay connected with your golfing community
         </p>
       </div>
-      <div className="hidden md:block">
-        <img 
-          src="/lovable-uploads/bc6a11b3-f4bd-40f7-8f2c-1fb52daa729c.png" 
-          alt="Golf Logo" 
-          className="h-16 w-auto"
-        />
-      </div>
+      {/* Removed the logo image */}
     </div>
   );
 };
