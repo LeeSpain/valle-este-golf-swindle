@@ -1,10 +1,9 @@
 
-import React, { ReactNode, useEffect, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { ReactNode } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 interface AuthRouteProps {
   children: ReactNode;
@@ -13,31 +12,9 @@ interface AuthRouteProps {
 
 const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false }) => {
   const { user, isLoading, authInitialized } = useAuth();
-  const location = useLocation();
-  const [stable, setStable] = useState(false);
-  
-  // Only update stable state after initial auth check is complete
-  useEffect(() => {
-    if (authInitialized && !isLoading) {
-      setStable(true);
-    }
-  }, [authInitialized, isLoading]);
-  
-  // Debug logging for the current auth state
-  useEffect(() => {
-    console.log("AuthRoute render state:", { 
-      path: location.pathname,
-      user: user?.email || "none", 
-      isAuth: !!user,
-      isLoading, 
-      authInitialized,
-      requireAdmin,
-      stable
-    });
-  }, [user, isLoading, authInitialized, location.pathname, requireAdmin, stable]);
   
   // If auth is still initializing, show a loading state
-  if (!authInitialized || isLoading) {
+  if (isLoading || !authInitialized) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
@@ -52,13 +29,11 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   
   // If user is not logged in, redirect to login
   if (!user) {
-    console.log("User not authenticated, redirecting to login from:", location.pathname);
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" replace />;
   }
   
   // Check admin access if required
   if (requireAdmin && user.role !== 'admin') {
-    console.log("User doesn't have admin access");
     return (
       <div className="p-8 max-w-3xl mx-auto">
         <Alert variant="destructive">
@@ -72,27 +47,8 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
     );
   }
   
-  // Prevent rendering until we have a stable state
-  if (!stable) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-golf-green m-auto"></div>
-          <p className="mt-4 text-golf-green">Preparing dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  // User is authenticated, render children with key to ensure proper mounting
-  console.log("Auth check passed, rendering protected content for:", user.email);
-  return (
-    <ErrorBoundary>
-      <div data-testid="auth-route-content">
-        {children}
-      </div>
-    </ErrorBoundary>
-  );
+  // User is authenticated, render children
+  return <>{children}</>;
 };
 
 export default AuthRoute;

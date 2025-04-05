@@ -1,30 +1,12 @@
 
 import { useGolfStateContext } from '@/context/GolfStateContext';
-import { useState, useEffect, useRef } from 'react';
 
 export const useGolfState = () => {
-  // Track whether the hook has been successfully initialized
-  const [isInitialized, setIsInitialized] = useState(false);
-  const initialized = useRef(false);
-  
-  useEffect(() => {
-    if (!initialized.current) {
-      console.log("useGolfState hook initialized");
-      setIsInitialized(true);
-      initialized.current = true;
-    }
-    
-    return () => {
-      // No cleanup needed
-    };
-  }, []);
-  
   try {
     const context = useGolfStateContext();
     
     if (!context) {
       console.error("useGolfState must be used within a GolfStateProvider");
-      // Return default values to prevent crashes, including empty function implementations
       return {
         players: [],
         games: [],

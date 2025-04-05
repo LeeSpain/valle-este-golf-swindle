@@ -1,9 +1,7 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 
 const DashboardHeader: React.FC = () => {
-  const [imageLoaded, setImageLoaded] = useState(true);
-  
   return (
     <div className="flex justify-between items-center mb-6">
       <div>
@@ -15,18 +13,11 @@ const DashboardHeader: React.FC = () => {
         </p>
       </div>
       <div className="hidden md:block">
-        {imageLoaded && (
-          <img 
-            src="/lovable-uploads/bc6a11b3-f4bd-40f7-8f2c-1fb52daa729c.png" 
-            alt="Golf Logo" 
-            className="h-16 w-auto"
-            onError={(e) => {
-              console.error("Image failed to load");
-              setImageLoaded(false);
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        )}
+        <img 
+          src="/lovable-uploads/bc6a11b3-f4bd-40f7-8f2c-1fb52daa729c.png" 
+          alt="Golf Logo" 
+          className="h-16 w-auto"
+        />
       </div>
     </div>
   );

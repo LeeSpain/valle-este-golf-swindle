@@ -1,13 +1,16 @@
+
 import React, { Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { GolfStateProvider } from "./context/GolfStateContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
 import AuthRoute from "./components/AuthRoute";
+
+// Import pages
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Leaderboard from "./pages/Leaderboard";
@@ -23,7 +26,7 @@ import AdminSettings from "./pages/admin/Settings";
 import NotFound from "./pages/NotFound";
 import './App.css';
 
-// Create a stable QueryClient instance with better error handling
+// Create QueryClient with better error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -52,41 +55,49 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <BrowserRouter>
-            <ErrorBoundary>
-              <GolfStateProvider>
-                <NotificationsProvider>
-                  {/* Global UI components */}
-                  <Toaster />
-                  <Sonner />
-                  
-                  {/* Application routes */}
-                  <Suspense fallback={<LoadingFallback />}>
-                    <Routes>
-                      {/* Public route */}
-                      <Route path="/login" element={<Login />} />
-                      
-                      {/* Protected Routes */}
-                      <Route path="/" element={<AuthRoute><Index /></AuthRoute>} />
-                      <Route path="/leaderboard" element={<AuthRoute><Leaderboard /></AuthRoute>} />
-                      <Route path="/photos" element={<AuthRoute><Photos /></AuthRoute>} />
-                      <Route path="/help" element={<AuthRoute><Help /></AuthRoute>} />
-                      <Route path="/players/:playerId" element={<AuthRoute><PlayerProfile /></AuthRoute>} />
-                      <Route path="/games/:gameId" element={<AuthRoute><GameDetails /></AuthRoute>} />
-                      
-                      {/* Admin Routes */}
-                      <Route path="/admin" element={<AuthRoute requireAdmin><AdminDashboard /></AuthRoute>} />
-                      <Route path="/admin/players" element={<AuthRoute requireAdmin><Players /></AuthRoute>} />
-                      <Route path="/admin/games" element={<AuthRoute requireAdmin><Games /></AuthRoute>} />
-                      <Route path="/admin/scores" element={<AuthRoute requireAdmin><Scores /></AuthRoute>} />
-                      <Route path="/admin/settings" element={<AuthRoute requireAdmin><AdminSettings /></AuthRoute>} />
-                      
-                      {/* Fallback route */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                </NotificationsProvider>
-              </GolfStateProvider>
-            </ErrorBoundary>
+            <GolfStateProvider>
+              <NotificationsProvider>
+                {/* Global UI components */}
+                <Toaster />
+                <Sonner />
+                
+                {/* Application routes */}
+                <Suspense fallback={<LoadingFallback />}>
+                  <Routes>
+                    {/* Public route */}
+                    <Route path="/login" element={<Login />} />
+                    
+                    {/* Protected Routes */}
+                    <Route 
+                      path="/" 
+                      element={
+                        <AuthRoute>
+                          <ErrorBoundary>
+                            <Index />
+                          </ErrorBoundary>
+                        </AuthRoute>
+                      } 
+                    />
+                    
+                    <Route path="/leaderboard" element={<AuthRoute><Leaderboard /></AuthRoute>} />
+                    <Route path="/photos" element={<AuthRoute><Photos /></AuthRoute>} />
+                    <Route path="/help" element={<AuthRoute><Help /></AuthRoute>} />
+                    <Route path="/players/:playerId" element={<AuthRoute><PlayerProfile /></AuthRoute>} />
+                    <Route path="/games/:gameId" element={<AuthRoute><GameDetails /></AuthRoute>} />
+                    
+                    {/* Admin Routes */}
+                    <Route path="/admin" element={<AuthRoute requireAdmin><AdminDashboard /></AuthRoute>} />
+                    <Route path="/admin/players" element={<AuthRoute requireAdmin><Players /></AuthRoute>} />
+                    <Route path="/admin/games" element={<AuthRoute requireAdmin><Games /></AuthRoute>} />
+                    <Route path="/admin/scores" element={<AuthRoute requireAdmin><Scores /></AuthRoute>} />
+                    <Route path="/admin/settings" element={<AuthRoute requireAdmin><AdminSettings /></AuthRoute>} />
+                    
+                    {/* Fallback route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </NotificationsProvider>
+            </GolfStateProvider>
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>

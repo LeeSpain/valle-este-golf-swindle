@@ -1,46 +1,38 @@
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/api/authService';
 import { toast } from '@/hooks/use-toast';
 import { User } from '@/types';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [authInitialized, setAuthInitialized] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const initRef = useRef(false);
   
-  // Initialize auth state only once on mount
+  // Initialize auth state
   useEffect(() => {
-    const initializeAuth = async () => {
-      if (initRef.current) return; // Prevent double initialization
-      
-      console.log("Auth hook initializing...");
-      initRef.current = true;
-      setIsLoading(true);
-      
-      try {
-        // Get user from localStorage on initial load
-        const storedUser = getCurrentUser();
-        console.log("User from localStorage:", storedUser);
-        
-        // Set user state from localStorage
-        setUser(storedUser);
-      } catch (error) {
-        console.error("Error during auth initialization:", error);
-        setUser(null);
-      } finally {
-        // Always mark initialization as complete and loading as done
-        setAuthInitialized(true);
-        setIsLoading(false);
-        console.log("Auth initialization complete");
-      }
-    };
+    if (authInitialized) return;
     
-    initializeAuth();
+    console.log("Auth hook initializing...");
+    setIsLoading(true);
+    
+    try {
+      // Get user from localStorage on initial load
+      const storedUser = getCurrentUser();
+      console.log("User from localStorage:", storedUser);
+      
+      // Set user state from localStorage
+      setUser(storedUser);
+    } catch (error) {
+      console.error("Error during auth initialization:", error);
+      setUser(null);
+    } finally {
+      setAuthInitialized(true);
+      setIsLoading(false);
+      console.log("Auth initialization complete");
+    }
   }, []);
   
   // Login function
@@ -60,9 +52,9 @@ export function useAuth() {
         description: `Welcome back, ${response.user.email}!`
       });
       
-      // Get the redirect path from location state or default to home
-      const from = location.state?.from?.pathname || (response.user.role === 'admin' ? '/admin' : '/');
-      navigate(from, { replace: true });
+      // Navigate to appropriate page based on role
+      const destination = response.user.role === 'admin' ? '/admin' : '/';
+      navigate(destination, { replace: true });
       
       return true;
     } catch (error) {
@@ -77,17 +69,12 @@ export function useAuth() {
     } finally {
       setIsLoading(false);
     }
-  }, [navigate, location]);
+  }, [navigate]);
   
   const logout = useCallback(() => {
     console.log("User explicitly logging out");
     apiLogout();
     setUser(null);
-    
-    // Reset initialization state
-    initRef.current = false;
-    setAuthInitialized(false);
-    
     navigate('/login');
     
     toast({
