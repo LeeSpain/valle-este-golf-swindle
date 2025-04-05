@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect, useMemo } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,32 +16,41 @@ import DashboardError from '@/components/Dashboard/DashboardError';
 import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
+  // Add more logging to identify rendering issues
   console.log("Index component starts rendering");
   const { players, games, getNextGame, weather, scores, isLoading, error } = useGolfState();
   
-  // Welcome toast is shown only once when the component mounts - keep this hook ALWAYS in the same position
-  React.useEffect(() => {
-    toast({
-      title: "Dashboard loaded",
-      description: "Welcome to Karen's Bar Golf Swindle",
-    });
+  // Initialize all data once - this prevents conditional hooks
+  const nextGame = useMemo(() => getNextGame ? getNextGame() : null, [getNextGame]);
+  const currentPlayer = useMemo(() => 
+    players && players.length > 0 ? players[0] : null, 
+  [players]);
+  
+  console.log("Index component data:", { 
+    playersCount: players?.length || 0,
+    gamesCount: games?.length || 0,
+    nextGameId: nextGame?.id || "none",
+    currentPlayerName: currentPlayer?.name || "none",
+    isLoading
+  });
+  
+  // Welcome toast is shown only once when the component mounts
+  useEffect(() => {
+    // Small delay to prevent toast from showing during navigation
+    const timer = setTimeout(() => {
+      toast({
+        title: "Dashboard loaded",
+        description: "Welcome to Karen's Bar Golf Swindle",
+      });
+    }, 500);
     
     return () => {
+      clearTimeout(timer);
       console.log("Index component unmounted");
     };
   }, []);
   
-  // Handle error state
-  if (error) {
-    console.error("Dashboard error:", error);
-    return (
-      <Layout>
-        <DashboardError error={error} />
-      </Layout>
-    );
-  }
-  
-  // Handle loading state
+  // Handle loading state with a dedicated component
   if (isLoading) {
     console.log("Dashboard is loading...");
     return (
@@ -55,14 +65,15 @@ const Index = () => {
     );
   }
   
-  console.log("Dashboard preparing to render content");
-  
-  // Always initialize these variables to prevent conditional hook issues
-  const nextGame = getNextGame ? getNextGame() : null;
-  const currentPlayer = players && players.length > 0 ? players[0] : null;
-  
-  console.log("Next game retrieved:", nextGame ? nextGame.id : "none");
-  console.log("Current player:", currentPlayer ? currentPlayer.name : "none");
+  // Handle error state
+  if (error) {
+    console.error("Dashboard error:", error);
+    return (
+      <Layout>
+        <DashboardError error={error} />
+      </Layout>
+    );
+  }
   
   return (
     <Layout>
@@ -86,7 +97,7 @@ const Index = () => {
               <NextGame 
                 game={nextGame} 
                 players={players || []} 
-                isLoading={isLoading} 
+                isLoading={false} 
               />
             </CardContent>
             {nextGame && (
@@ -113,7 +124,7 @@ const Index = () => {
             <CardContent className="pt-4">
               <Weather 
                 weatherData={weather} 
-                isLoading={isLoading} 
+                isLoading={false} 
               />
             </CardContent>
           </Card>
@@ -140,7 +151,7 @@ const Index = () => {
             <PlayerStats 
               player={currentPlayer} 
               scores={scores || []} 
-              isLoading={isLoading} 
+              isLoading={false} 
             />
           </CardContent>
           <CardFooter>
@@ -159,4 +170,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default React.memo(Index);

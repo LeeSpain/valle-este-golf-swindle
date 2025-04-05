@@ -1,5 +1,5 @@
 
-import React, { ReactNode, memo, useEffect } from 'react';
+import React, { ReactNode, memo, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -13,16 +13,37 @@ interface AuthRouteProps {
 // Memoize the component to prevent unnecessary re-renders
 const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = false }) => {
   const { user, isLoading, authInitialized } = useAuth();
+  // Add a local loading state to prevent flashing
+  const [renderContent, setRenderContent] = useState(false);
+  
+  // Only render content after a brief delay to prevent flashing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setRenderContent(true);
+    }, 50);
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   // Log render for debugging
   useEffect(() => {
     console.log("AuthRoute rendered with:", { 
-      user: user?.email, 
+      userEmail: user?.email, 
       isLoading, 
       authInitialized, 
-      requireAdmin
+      requireAdmin,
+      renderContent
     });
-  }, [user, isLoading, authInitialized, requireAdmin]);
+    
+    return () => {
+      console.log("AuthRoute unmounted");
+    };
+  }, [user, isLoading, authInitialized, requireAdmin, renderContent]);
+  
+  // Don't render anything until our local state says we're ready
+  if (!renderContent) {
+    return null;
+  }
   
   // If auth is still initializing, show a loading state
   if (!authInitialized || isLoading) {
@@ -40,6 +61,7 @@ const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = fal
   
   // If user is not logged in, redirect to login
   if (!user) {
+    console.log("User not authenticated, redirecting to login");
     return <Navigate to="/login" replace />;
   }
   
@@ -59,6 +81,7 @@ const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = fal
   }
   
   // User is authenticated, render children
+  console.log("AuthRoute rendering children for user:", user.email);
   return <>{children}</>;
 });
 
