@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   console.log("Index component starts rendering");
+  const [renderError, setRenderError] = useState<string | null>(null);
   const { players, games, getNextGame, weather, scores, isLoading, error } = useGolfState();
   
   useEffect(() => {
@@ -63,12 +64,23 @@ const Index = () => {
   console.log("Dashboard preparing to render content");
   
   try {
-    const nextGame = getNextGame ? getNextGame() : null;
-    console.log("Next game retrieved:", nextGame ? nextGame.id : "none");
+    let nextGame = null;
+    let currentPlayer = null;
     
-    // Add current player (first player for demonstration)
-    const currentPlayer = players && players.length > 0 ? players[0] : null;
-    console.log("Current player:", currentPlayer ? currentPlayer.name : "none");
+    try {
+      // Safely attempt to get the next game
+      if (getNextGame && typeof getNextGame === 'function') {
+        nextGame = getNextGame();
+      }
+      console.log("Next game retrieved:", nextGame ? nextGame.id : "none");
+      
+      // Safely get current player
+      currentPlayer = players && players.length > 0 ? players[0] : null;
+      console.log("Current player:", currentPlayer ? currentPlayer.name : "none");
+    } catch (err) {
+      console.error("Error preparing data:", err);
+      // Continue rendering with null values rather than showing an error
+    }
     
     return (
       <Layout>
@@ -165,9 +177,13 @@ const Index = () => {
     );
   } catch (err) {
     console.error("Error in Index component render:", err);
+    const errorMessage = err instanceof Error ? err.message : "Unknown error in Dashboard";
+    // Update state to trigger a re-render with the error
+    setRenderError(errorMessage);
+    
     return (
       <Layout>
-        <DashboardError error={err instanceof Error ? err.message : "Unknown error in Dashboard"} />
+        <DashboardError error={errorMessage} />
       </Layout>
     );
   }

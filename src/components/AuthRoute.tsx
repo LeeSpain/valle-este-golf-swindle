@@ -1,5 +1,5 @@
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -16,14 +16,16 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
   const location = useLocation();
   
   // Debug logging for the current auth state
-  console.log("AuthRoute render state:", { 
-    path: location.pathname,
-    user: user?.email || "none", 
-    isAuth: !!user,
-    isLoading, 
-    authInitialized,
-    requireAdmin
-  });
+  useEffect(() => {
+    console.log("AuthRoute render state:", { 
+      path: location.pathname,
+      user: user?.email || "none", 
+      isAuth: !!user,
+      isLoading, 
+      authInitialized,
+      requireAdmin
+    });
+  }, [user, isLoading, authInitialized, location.pathname, requireAdmin]);
   
   // If auth is still initializing, show a loading state
   if (!authInitialized || isLoading) {

@@ -18,6 +18,10 @@ const DashboardHeader: React.FC = () => {
           src="/lovable-uploads/bc6a11b3-f4bd-40f7-8f2c-1fb52daa729c.png" 
           alt="Golf Logo" 
           className="h-16 w-auto"
+          onError={(e) => {
+            console.error("Image failed to load");
+            e.currentTarget.style.display = 'none';
+          }}
         />
       </div>
     </div>

@@ -40,9 +40,9 @@ export function useAuth() {
     };
     
     initializeAuth();
-  }, [authInitialized]);
+  }, []);
   
-  // Only log out if explicitly requested - prevents unintended logout
+  // Login function
   const login = useCallback(async (email: string, password: string) => {
     console.log("Login attempt for:", email);
     setIsLoading(true);
@@ -90,7 +90,7 @@ export function useAuth() {
     });
   }, [navigate]);
   
-  // Debug effect to track auth state changes
+  // Debug effect for auth state changes - prevent excessive rerenders
   useEffect(() => {
     console.log("Auth state updated:", { 
       user: user?.email || "none",
