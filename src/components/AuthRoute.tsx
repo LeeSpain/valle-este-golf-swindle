@@ -63,11 +63,11 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, requireAdmin = false })
     );
   }
   
-  // User is authenticated, render children
+  // User is authenticated, render children with key to ensure proper remounting
   console.log("Auth check passed, rendering protected content for:", user.email);
   return (
     <ErrorBoundary>
-      <div data-testid="auth-route-content">
+      <div data-testid="auth-route-content" key={`auth-route-${location.pathname}`}>
         {children}
       </div>
     </ErrorBoundary>

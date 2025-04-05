@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/api/authService';
 import { toast } from '@/hooks/use-toast';
@@ -11,10 +11,14 @@ export function useAuth() {
   const [authInitialized, setAuthInitialized] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const initRef = useRef(false);
   
   // Initialize auth state only once on mount
   useEffect(() => {
+    if (initRef.current) return; // Prevent double initialization in strict mode
+    
     console.log("Auth hook initializing...");
+    initRef.current = true;
     
     const initializeAuth = async () => {
       if (authInitialized) return; // Prevent multiple initializations
@@ -82,6 +86,11 @@ export function useAuth() {
     console.log("User explicitly logging out");
     apiLogout();
     setUser(null);
+    
+    // Reset initialization state
+    initRef.current = false;
+    setAuthInitialized(false);
+    
     navigate('/login');
     
     toast({

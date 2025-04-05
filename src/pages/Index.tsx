@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,17 +19,22 @@ const Index = () => {
   console.log("Index component starts rendering");
   const [renderError, setRenderError] = useState<string | null>(null);
   const { players, games, getNextGame, weather, scores, isLoading, error } = useGolfState();
+  const mountedRef = useRef(false);
   
   useEffect(() => {
     console.log("Index component mounted", { 
       playersCount: players?.length || 0, 
-      gamesCount: games?.length || 0
+      gamesCount: games?.length || 0,
+      mountedBefore: mountedRef.current
     });
     
-    toast({
-      title: "Dashboard loaded",
-      description: "Welcome to Karen's Bar Golf Swindle",
-    });
+    if (!mountedRef.current) {
+      toast({
+        title: "Dashboard loaded",
+        description: "Welcome to Karen's Bar Golf Swindle",
+      });
+      mountedRef.current = true;
+    }
     
     return () => {
       console.log("Index component unmounted");

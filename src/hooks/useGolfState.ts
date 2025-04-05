@@ -1,8 +1,21 @@
 
 import { useGolfStateContext } from '@/context/GolfStateContext';
+import { useState, useEffect } from 'react';
 
 export const useGolfState = () => {
-  console.log("useGolfState hook called");
+  // Track whether the hook has been successfully initialized
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  useEffect(() => {
+    console.log("useGolfState hook initialized");
+    setIsInitialized(true);
+    
+    return () => {
+      console.log("useGolfState hook cleanup");
+    };
+  }, []);
+  
+  console.log("useGolfState hook called, initialized:", isInitialized);
   
   try {
     const context = useGolfStateContext();
