@@ -1,6 +1,5 @@
 
-import React, { createContext, useContext, useEffect } from 'react';
-import { useNotifications } from '@/hooks/use-notifications';
+import React, { createContext, useContext } from 'react';
 
 interface NotificationsContextType {
   notifyUpcomingGame: (gameDate: string, teeTime: string) => void;
@@ -9,28 +8,21 @@ interface NotificationsContextType {
   resetNotifications: () => void;
 }
 
-const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
+const NotificationsContext = createContext<NotificationsContextType>({
+  notifyUpcomingGame: () => {},
+  notifyScoreVerified: () => {},
+  notifyNewScore: () => {},
+  resetNotifications: () => {}
+});
 
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const notifications = useNotifications();
-  
-  // Initialize notifications when the app starts
-  useEffect(() => {
-    // This will trigger the automatic notification checks
-    const checkInterval = setInterval(() => {
-      notifications.resetNotifications();
-    }, 3600000); // Reset every hour to check for new notifications
-    
-    return () => clearInterval(checkInterval);
-  }, [notifications]);
-  
   return (
     <NotificationsContext.Provider
       value={{
-        notifyUpcomingGame: notifications.notifyUpcomingGame,
-        notifyScoreVerified: notifications.notifyScoreVerified,
-        notifyNewScore: notifications.notifyNewScore,
-        resetNotifications: notifications.resetNotifications,
+        notifyUpcomingGame: () => {},
+        notifyScoreVerified: () => {},
+        notifyNewScore: () => {},
+        resetNotifications: () => {}
       }}
     >
       {children}
@@ -39,9 +31,10 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
 };
 
 export const useNotificationsContext = () => {
-  const context = useContext(NotificationsContext);
-  if (context === undefined) {
-    throw new Error('useNotificationsContext must be used within a NotificationsProvider');
-  }
-  return context;
+  return {
+    notifyUpcomingGame: () => {},
+    notifyScoreVerified: () => {},
+    notifyNewScore: () => {},
+    resetNotifications: () => {}
+  };
 };

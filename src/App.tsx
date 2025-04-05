@@ -1,13 +1,9 @@
-
 import React, { Suspense, lazy } from 'react';
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { GolfStateProvider } from "./context/GolfStateContext";
-import { NotificationsProvider } from "./context/NotificationsContext";
 import AuthRoute from "./components/AuthRoute";
 import './App.css';
 
@@ -56,14 +52,11 @@ const App = () => {
         <TooltipProvider>
           <BrowserRouter>
             <GolfStateProvider>
-              <NotificationsProvider>
-                {/* Global UI components */}
-                <Toaster />
-                <Sonner />
+              
+              
                 
-                {/* Application routes */}
-                <Suspense fallback={<LoadingFallback />}>
-                  <Routes>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
                     {/* Public route */}
                     <Route path="/login" element={<Login />} />
                     
@@ -194,7 +187,6 @@ const App = () => {
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
-              </NotificationsProvider>
             </GolfStateProvider>
           </BrowserRouter>
         </TooltipProvider>
