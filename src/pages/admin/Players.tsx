@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useCallback } from 'react';
 import Layout from '@/components/Layout';
 import PlayerList from '@/components/Admin/PlayerList';
 import PlayerForm from '@/components/Admin/PlayerForm';
@@ -7,37 +8,83 @@ import { Player } from '@/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const Players = () => {
+  // Get players data with useGolfState hook
   const { players, isLoading, addPlayer, updatePlayer, deletePlayer } = useGolfState();
+  
+  // Local state for UI
   const [showForm, setShowForm] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   
-  const handleAddNew = () => {
+  // Debug output
+  console.log("Players admin page state:", { 
+    playersCount: players.length, 
+    isLoading, 
+    showForm, 
+    isEditing: !!editingPlayer 
+  });
+  
+  // Memoized handlers to prevent unnecessary re-renders
+  const handleAddNew = useCallback(() => {
     setEditingPlayer(null);
     setShowForm(true);
-  };
+  }, []);
   
-  const handleEdit = (player: Player) => {
+  const handleEdit = useCallback((player: Player) => {
     setEditingPlayer(player);
     setShowForm(true);
-  };
+  }, []);
   
-  const handleDelete = (playerId: string) => {
+  const handleDelete = useCallback((playerId: string) => {
     setDeleteConfirm(playerId);
-  };
+  }, []);
   
-  const confirmDelete = () => {
+  const confirmDelete = useCallback(() => {
     if (deleteConfirm) {
-      deletePlayer(deleteConfirm);
+      deletePlayer(deleteConfirm)
+        .then(success => {
+          if (success) {
+            toast({
+              title: "Player deleted",
+              description: "Player has been removed successfully"
+            });
+          }
+        })
+        .catch(err => {
+          console.error("Error deleting player:", err);
+          toast({
+            title: "Error",
+            description: "Failed to delete player",
+            variant: "destructive"
+          });
+        });
       setDeleteConfirm(null);
     }
-  };
+  }, [deleteConfirm, deletePlayer]);
   
-  const handleFormSubmit = (playerData: Partial<Player>) => {
+  const handleFormSubmit = useCallback((playerData: Partial<Player>) => {
     if (editingPlayer) {
-      updatePlayer(editingPlayer.id, playerData);
+      updatePlayer(editingPlayer.id, playerData)
+        .then(success => {
+          if (success) {
+            toast({
+              title: "Player updated",
+              description: "Player details have been updated successfully"
+            });
+            setShowForm(false);
+          }
+        })
+        .catch(err => {
+          console.error("Error updating player:", err);
+          toast({
+            title: "Error",
+            description: "Failed to update player",
+            variant: "destructive"
+          });
+        });
     } else {
       // Ensure all required fields are present for new players
       const newPlayer = {
@@ -47,15 +94,31 @@ const Players = () => {
         gender: playerData.gender || 'male',
         preferredTee: playerData.preferredTee || 'yellow'
       };
-      addPlayer(newPlayer);
+      
+      addPlayer(newPlayer)
+        .then(success => {
+          if (success) {
+            toast({
+              title: "Player added",
+              description: "New player has been added successfully"
+            });
+            setShowForm(false);
+          }
+        })
+        .catch(err => {
+          console.error("Error adding player:", err);
+          toast({
+            title: "Error",
+            description: "Failed to add player",
+            variant: "destructive"
+          });
+        });
     }
-    setShowForm(false);
-  };
+  }, [editingPlayer, updatePlayer, addPlayer]);
   
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setShowForm(false);
-  };
-
+  }, []);
   
   return (
     <Layout isAdmin>

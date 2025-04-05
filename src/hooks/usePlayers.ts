@@ -3,14 +3,18 @@ import { Player } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { useGolfStateContext } from '@/context/GolfStateContext';
 import { createPlayer, updatePlayer, deletePlayer } from '@/api/playerService';
+import { useCallback } from 'react';
 
 export function usePlayers() {
   const { players, setPlayers } = useGolfStateContext();
   
-  // Updated to accept Partial<Player> instead of requiring specific fields
-  const addPlayer = async (playerData: Partial<Player>) => {
+  // Updated to accept Partial<Player> and properly handle async operations
+  const addPlayer = useCallback(async (playerData: Partial<Player>) => {
     try {
+      console.log("Adding player:", playerData);
       const newPlayer = await createPlayer(playerData);
+      
+      // Update state only after API call succeeds
       setPlayers(prev => [...prev, newPlayer]);
       
       toast({
@@ -21,14 +25,23 @@ export function usePlayers() {
       return newPlayer;
     } catch (error) {
       console.error('Error adding player:', error);
+      
+      toast({
+        title: "Error",
+        description: "Failed to add player. Please try again.",
+        variant: "destructive"
+      });
+      
       return null;
     }
-  };
+  }, [setPlayers]);
   
-  const updatePlayerById = async (playerId: string, data: Partial<Player>) => {
+  const updatePlayerById = useCallback(async (playerId: string, data: Partial<Player>) => {
     try {
+      console.log("Updating player:", playerId, data);
       const updatedPlayer = await updatePlayer(playerId, data);
       
+      // Update state only after API call succeeds
       setPlayers(prev => 
         prev.map(player => 
           player.id === playerId ? updatedPlayer : player
@@ -43,30 +56,51 @@ export function usePlayers() {
       return updatedPlayer;
     } catch (error) {
       console.error('Error updating player:', error);
+      
+      toast({
+        title: "Error",
+        description: "Failed to update player. Please try again.",
+        variant: "destructive"
+      });
+      
       return null;
     }
-  };
+  }, [setPlayers]);
   
-  const deletePlayerById = async (playerId: string) => {
+  const deletePlayerById = useCallback(async (playerId: string) => {
     try {
-      await deletePlayer(playerId);
-      const playerToDelete = players.find(p => p.id === playerId);
+      console.log("Deleting player:", playerId);
       
+      // Cache player name before deletion
+      const playerToDelete = players.find(p => p.id === playerId);
+      if (!playerToDelete) {
+        console.error('Player not found:', playerId);
+        return false;
+      }
+      
+      await deletePlayer(playerId);
+      
+      // Update state only after API call succeeds
       setPlayers(prev => prev.filter(player => player.id !== playerId));
       
-      if (playerToDelete) {
-        toast({
-          title: "Player Removed",
-          description: `${playerToDelete.name} has been removed from the swindle.`
-        });
-      }
+      toast({
+        title: "Player Removed",
+        description: `${playerToDelete.name} has been removed from the swindle.`
+      });
       
       return true;
     } catch (error) {
       console.error('Error deleting player:', error);
+      
+      toast({
+        title: "Error",
+        description: "Failed to delete player. Please try again.",
+        variant: "destructive"
+      });
+      
       return false;
     }
-  };
+  }, [players, setPlayers]);
   
   return {
     players,

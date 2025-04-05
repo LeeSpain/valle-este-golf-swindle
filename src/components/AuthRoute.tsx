@@ -1,5 +1,5 @@
 
-import React, { ReactNode, memo } from 'react';
+import React, { ReactNode, memo, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -14,13 +14,22 @@ interface AuthRouteProps {
 const AuthRoute: React.FC<AuthRouteProps> = memo(({ children, requireAdmin = false }) => {
   const { user, isLoading, authInitialized } = useAuth();
   
-  console.log("AuthRoute rendering with:", { 
-    user: user?.email || "none", 
-    role: user?.role || "none",
-    isLoading, 
-    authInitialized,
-    requireAdmin
-  });
+  // Log auth state for debugging
+  useEffect(() => {
+    console.log("AuthRoute mount with:", { 
+      user: user?.email || "none", 
+      role: user?.role || "none",
+      isLoading, 
+      authInitialized,
+      requireAdmin
+    });
+    
+    return () => {
+      console.log("AuthRoute unmounting", {
+        user: user?.email || "none"
+      });
+    };
+  }, [user, isLoading, authInitialized, requireAdmin]);
   
   // Don't render anything until auth is initialized
   if (!authInitialized) {

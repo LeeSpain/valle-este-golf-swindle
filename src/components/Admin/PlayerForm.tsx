@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +21,13 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
   onSubmit, 
   onCancel 
 }) => {
-  const [formData, setFormData] = React.useState<Partial<Player>>(player);
+  const [formData, setFormData] = useState<Partial<Player>>(player);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // When player prop changes, update formData
+  useEffect(() => {
+    setFormData(player);
+  }, [player]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -41,11 +47,18 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    setIsSubmitting(true);
+    
+    try {
+      onSubmit(formData);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setIsSubmitting(false);
+    }
   };
   
   // Auto-select tee color based on gender
-  React.useEffect(() => {
+  useEffect(() => {
     if (formData.gender === 'male' && !formData.preferredTee) {
       setFormData(prev => ({ ...prev, preferredTee: 'yellow' }));
     } else if (formData.gender === 'female' && !formData.preferredTee) {
@@ -71,6 +84,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
               value={formData.name || ''}
               onChange={handleChange}
               required
+              disabled={isSubmitting}
             />
           </div>
           
@@ -83,6 +97,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
               value={formData.email || ''}
               onChange={handleChange}
               required
+              disabled={isSubmitting}
             />
           </div>
           
@@ -93,6 +108,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
               name="phone"
               value={formData.phone || ''}
               onChange={handleChange}
+              disabled={isSubmitting}
             />
           </div>
           
@@ -104,6 +120,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
               value={formData.facebookLink || ''}
               onChange={handleChange}
               placeholder="https://facebook.com/username"
+              disabled={isSubmitting}
             />
           </div>
           
@@ -111,8 +128,9 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
             <div className="space-y-2">
               <Label htmlFor="gender">Gender</Label>
               <Select 
-                value={formData.gender} 
+                value={formData.gender as Gender} 
                 onValueChange={(value) => handleSelectChange('gender', value as Gender)}
+                disabled={isSubmitting}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
@@ -127,8 +145,9 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
             <div className="space-y-2">
               <Label htmlFor="preferredTee">Preferred Tee</Label>
               <Select 
-                value={formData.preferredTee} 
+                value={formData.preferredTee as TeeColor} 
                 onValueChange={(value) => handleSelectChange('preferredTee', value as TeeColor)}
+                disabled={isSubmitting}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select tee" />
@@ -153,16 +172,26 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
               value={formData.handicap !== undefined ? formData.handicap : ''}
               onChange={handleHandicapChange}
               required
+              disabled={isSubmitting}
             />
           </div>
         </CardContent>
         
         <CardFooter className="flex justify-between">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
             Cancel
           </Button>
-          <Button type="submit" className="bg-golf-green hover:bg-golf-green-dark">
-            {isEditing ? 'Update Player' : 'Add Player'}
+          <Button 
+            type="submit" 
+            className="bg-golf-green hover:bg-golf-green-dark"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Saving...' : (isEditing ? 'Update Player' : 'Add Player')}
           </Button>
         </CardFooter>
       </form>

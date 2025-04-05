@@ -19,7 +19,7 @@ export const useGolfState = () => {
   // Get the raw context
   const context = useGolfStateContext();
   
-  // If context is missing, create a stable empty context instead of throwing
+  // Memoize the context data to prevent unnecessary re-renders
   const stableContext = useMemo(() => {
     if (!context && isMountedRef.current) {
       console.error("useGolfState must be used within a GolfStateProvider");
@@ -46,27 +46,80 @@ export const useGolfState = () => {
         getPhotosByGameId: () => [],
         
         // Player functions
-        addPlayer: () => Promise.resolve(false),
-        updatePlayer: () => Promise.resolve(false),
-        deletePlayer: () => Promise.resolve(false),
+        addPlayer: async () => false,
+        updatePlayer: async () => false,
+        deletePlayer: async () => false,
         
         // Game functions
-        addGame: () => Promise.resolve(false),
-        updateGame: () => Promise.resolve(false),
-        deleteGame: () => Promise.resolve(false),
+        addGame: async () => false,
+        updateGame: async () => false,
+        deleteGame: async () => false,
         
         // Score functions
-        saveScore: () => Promise.resolve(false),
-        verifyScore: () => Promise.resolve(false),
+        saveScore: async () => false,
+        verifyScore: async () => false,
         
         // Photo functions
-        addPhoto: () => Promise.resolve(false)
+        addPhoto: async () => false
       };
     }
     
     // Return the actual context if available
     return context;
   }, [context]);
+
+  // Wrap the CRUD operations with isMounted check to prevent updates after unmount
+  const wrappedContext = useMemo(() => {
+    if (!stableContext) return stableContext;
+    
+    return {
+      ...stableContext,
+      
+      // Wrap player operations
+      addPlayer: async (data) => {
+        if (!isMountedRef.current) return false;
+        return stableContext.addPlayer(data);
+      },
+      updatePlayer: async (id, data) => {
+        if (!isMountedRef.current) return false;
+        return stableContext.updatePlayer(id, data);
+      },
+      deletePlayer: async (id) => {
+        if (!isMountedRef.current) return false;
+        return stableContext.deletePlayer(id);
+      },
+      
+      // Wrap game operations
+      addGame: async (data) => {
+        if (!isMountedRef.current) return false;
+        return stableContext.addGame(data);
+      },
+      updateGame: async (id, data) => {
+        if (!isMountedRef.current) return false;
+        return stableContext.updateGame(id, data);
+      },
+      deleteGame: async (id) => {
+        if (!isMountedRef.current) return false;
+        return stableContext.deleteGame(id);
+      },
+      
+      // Wrap score operations
+      saveScore: async (data) => {
+        if (!isMountedRef.current) return false;
+        return stableContext.saveScore(data);
+      },
+      verifyScore: async (id) => {
+        if (!isMountedRef.current) return false;
+        return stableContext.verifyScore(id);
+      },
+      
+      // Wrap photo operations
+      addPhoto: async (data) => {
+        if (!isMountedRef.current) return false;
+        return stableContext.addPhoto(data);
+      }
+    };
+  }, [stableContext]);
   
-  return stableContext;
+  return wrappedContext;
 };

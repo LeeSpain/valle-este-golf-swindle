@@ -2,15 +2,16 @@
 import { Game } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { useGolfStateContext } from '@/context/GolfStateContext';
-import { useContext } from 'react';
+import { useCallback } from 'react';
 import { useNotificationsContext } from '@/context/NotificationsContext';
+import { createGame, updateGame, deleteGame } from '@/api/gameService';
 
 export function useGames() {
   const { games, setGames, scores } = useGolfStateContext();
   const notifications = useNotificationsContext();
   
   // Find next game
-  const getNextGame = (): Game | null => {
+  const getNextGame = useCallback((): Game | null => {
     if (!games || games.length === 0) return null;
     
     const now = new Date();
@@ -19,10 +20,10 @@ export function useGames() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     
     return upcomingGames.length > 0 ? upcomingGames[0] : null;
-  };
+  }, [games]);
   
   // Find latest completed game
-  const getLatestCompletedGame = (): Game | null => {
+  const getLatestCompletedGame = useCallback((): Game | null => {
     if (!games || games.length === 0) return null;
     
     const now = new Date();
@@ -31,21 +32,23 @@ export function useGames() {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     
     return completedGames.length > 0 ? completedGames[0] : null;
-  };
+  }, [games]);
   
   // Get all checked-in players for a game
-  const getCheckedInPlayers = (gameId: string): string[] => {
+  const getCheckedInPlayers = useCallback((gameId: string): string[] => {
     const game = games.find(g => g.id === gameId);
     if (!game || !game.playerStatus) return [];
     
     return game.playerStatus
       .filter(status => status.checkedIn)
       .map(status => status.playerId);
-  };
+  }, [games]);
   
   // Add a new game with proper playerStatus initialization
-  const addGame = async (gameData: Partial<Game>) => {
+  const addGame = useCallback(async (gameData: Partial<Game>) => {
     try {
+      console.log("Adding game:", gameData);
+      
       // Ensure playerStatus is properly initialized for all selected players
       if (gameData.players && (!gameData.playerStatus || gameData.playerStatus.length === 0)) {
         gameData.playerStatus = gameData.players.map(playerId => ({
@@ -83,12 +86,21 @@ export function useGames() {
       return newGame;
     } catch (error) {
       console.error('Error adding game:', error);
+      
+      toast({
+        title: "Error",
+        description: "Failed to schedule game. Please try again.",
+        variant: "destructive"
+      });
+      
       return null;
     }
-  };
+  }, [setGames, notifications]);
   
-  const updateGameById = async (gameId: string, data: Partial<Game>) => {
+  const updateGameById = useCallback(async (gameId: string, data: Partial<Game>) => {
     try {
+      console.log("Updating game:", gameId, data);
+      
       const gameBeforeUpdate = games.find(game => game.id === gameId);
       if (!gameBeforeUpdate) {
         console.error('Game not found:', gameId);
@@ -147,12 +159,21 @@ export function useGames() {
       return updatedGame;
     } catch (error) {
       console.error('Error updating game:', error);
+      
+      toast({
+        title: "Error",
+        description: "Failed to update game. Please try again.",
+        variant: "destructive"
+      });
+      
       return null;
     }
-  };
+  }, [games, setGames, notifications]);
   
-  const deleteGameById = async (gameId: string) => {
+  const deleteGameById = useCallback(async (gameId: string) => {
     try {
+      console.log("Deleting game:", gameId);
+      
       // Check if game has scores
       const gameScores = scores.filter(score => score.gameId === gameId);
       
@@ -165,26 +186,34 @@ export function useGames() {
         return false;
       }
       
-      await deleteGame(gameId);
       const gameToDelete = games.find(g => g.id === gameId);
+      if (!gameToDelete) {
+        console.error('Game not found:', gameId);
+        return false;
+      }
+      
+      await deleteGame(gameId);
+      
       setGames(prev => prev.filter(game => game.id !== gameId));
       
-      if (gameToDelete) {
-        toast({
-          title: "Game Deleted",
-          description: `Game for ${new Date(gameToDelete.date).toLocaleDateString()} has been removed.`
-        });
-      }
+      toast({
+        title: "Game Deleted",
+        description: `Game for ${new Date(gameToDelete.date).toLocaleDateString()} has been removed.`
+      });
       
       return true;
     } catch (error) {
       console.error('Error deleting game:', error);
+      
+      toast({
+        title: "Error",
+        description: "Failed to delete game. Please try again.",
+        variant: "destructive"
+      });
+      
       return false;
     }
-  };
-
-  // Import functions from API
-  const { createGame, updateGame, deleteGame } = require('@/api/gameService');
+  }, [games, scores, setGames]);
 
   return {
     games,
