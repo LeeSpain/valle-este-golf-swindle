@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Game, Player, CourseSide } from '@/types';
+import { Game, Player, CourseSide, PlayerGameStatus } from '@/types';
 import { Calendar } from 'lucide-react';
 
 interface GameFormProps {
@@ -42,6 +42,7 @@ const GameForm: React.FC<GameFormProps> = ({
     // Store date as a string for the input field
     date: formatDateToString(game.date),
     players: game.players || [],
+    playerStatus: game.playerStatus || [],
   });
   
   // Initialize with the next Sunday if adding a new game
@@ -69,10 +70,28 @@ const GameForm: React.FC<GameFormProps> = ({
   const handlePlayerToggle = (playerId: string) => {
     setFormData(prev => {
       const currentPlayers = prev.players || [];
+      const currentPlayerStatus = prev.playerStatus || [];
+      
       if (currentPlayers.includes(playerId)) {
-        return { ...prev, players: currentPlayers.filter(id => id !== playerId) };
+        // Remove player from the game
+        return {
+          ...prev,
+          players: currentPlayers.filter(id => id !== playerId),
+          playerStatus: currentPlayerStatus.filter(status => status.playerId !== playerId)
+        };
       } else {
-        return { ...prev, players: [...currentPlayers, playerId] };
+        // Add player to the game with default status
+        const newPlayerStatus: PlayerGameStatus = {
+          playerId,
+          checkedIn: false,
+          hasPaid: false
+        };
+        
+        return {
+          ...prev,
+          players: [...currentPlayers, playerId],
+          playerStatus: [...currentPlayerStatus, newPlayerStatus]
+        };
       }
     });
   };

@@ -4,12 +4,13 @@ import Layout from '@/components/Layout';
 import GameList from '@/components/Admin/GameList';
 import GameForm from '@/components/Admin/GameForm';
 import ScoreEntry from '@/components/Admin/ScoreEntry';
+import PlayerCheckIn from '@/components/Admin/PlayerCheckIn';
 import { useGolfState } from '@/hooks/useGolfState';
 import { Game, Score } from '@/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { valleDelEsteCourse } from '@/data/courseData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, ClipboardList } from 'lucide-react';
+import { Calendar, ClipboardList, Users, CheckCircle } from 'lucide-react';
 
 const Games = () => {
   const { games, players, scores, isLoading, addGame, updateGame, deleteGame, saveScore, verifyScore } = useGolfState();
@@ -17,6 +18,7 @@ const Games = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [scoreEntry, setScoreEntry] = useState<Game | null>(null);
+  const [checkInGame, setCheckInGame] = useState<Game | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   
   
@@ -51,6 +53,7 @@ const Games = () => {
         teeTime: gameData.teeTime || '12:00',
         courseSide: gameData.courseSide || 'front9',
         players: gameData.players || [],
+        playerStatus: gameData.playerStatus || [],
         isComplete: gameData.isComplete || false,
         isVerified: gameData.isVerified || false,
         notes: gameData.notes || ''
@@ -62,10 +65,27 @@ const Games = () => {
   
   const handleCancel = () => {
     setShowForm(false);
+    setScoreEntry(null);
+    setCheckInGame(null);
   };
   
   const handleManageScores = (game: Game) => {
     setScoreEntry(game);
+  };
+  
+  const handleCheckIn = (game: Game) => {
+    setCheckInGame(game);
+  };
+  
+  const handleUpdateGamePlayers = (updatedGame: Partial<Game>) => {
+    if (checkInGame) {
+      updateGame(checkInGame.id, updatedGame);
+      // Update the local state to reflect changes
+      setCheckInGame({
+        ...checkInGame,
+        ...updatedGame
+      } as Game);
+    }
   };
   
   const handleSaveScore = (scoreData: Partial<Score>) => {
@@ -96,13 +116,19 @@ const Games = () => {
     setScoreEntry(null);
   };
 
+  const handleCompleteGame = (game: Game) => {
+    updateGame(game.id, { isComplete: true });
+  };
+
   const pageTitle = () => {
+    if (checkInGame) return 'Player Check-In';
     if (scoreEntry) return 'Score Entry';
     if (showForm) return editingGame ? 'Edit Game' : 'Schedule New Game';
     return 'Game Management';
   };
   
   const pageDescription = () => {
+    if (checkInGame) return `Check in players for ${new Date(checkInGame.date).toLocaleDateString()}`;
     if (scoreEntry) return `Enter scores for ${new Date(scoreEntry.date).toLocaleDateString()}`;
     if (showForm) return editingGame ? 'Update game details' : 'Schedule a new game';
     return 'View and manage all scheduled games';
@@ -120,7 +146,7 @@ const Games = () => {
           </p>
         </div>
         
-        {!showForm && !scoreEntry && (
+        {!showForm && !scoreEntry && !checkInGame && (
           <Card className="border-none shadow-lg">
             <CardHeader className="bg-gradient-to-r from-golf-green-light/10 to-transparent pb-2">
               <CardTitle className="flex items-center gap-2 text-xl">
@@ -136,6 +162,8 @@ const Games = () => {
                 onDelete={handleDelete}
                 onAddNew={handleAddNew}
                 onManageScores={handleManageScores}
+                onCheckIn={handleCheckIn}
+                onCompleteGame={handleCompleteGame}
                 isLoading={isLoading}
               />
             </CardContent>
@@ -156,6 +184,26 @@ const Games = () => {
                 players={players}
                 isEditing={!!editingGame}
                 onSubmit={handleFormSubmit}
+                onCancel={handleCancel}
+              />
+            </CardContent>
+          </Card>
+        )}
+        
+        {checkInGame && (
+          <Card className="border-none shadow-lg animate-fade-in">
+            <CardHeader className="bg-gradient-to-r from-golf-green-light/10 to-transparent pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Users className="h-5 w-5 text-golf-green" />
+                <span>Player Check-In for {new Date(checkInGame.date).toLocaleDateString()}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PlayerCheckIn 
+                game={checkInGame}
+                players={players.filter(player => checkInGame.players.includes(player.id))}
+                availablePlayers={players}
+                onUpdateGamePlayers={handleUpdateGamePlayers}
                 onCancel={handleCancel}
               />
             </CardContent>

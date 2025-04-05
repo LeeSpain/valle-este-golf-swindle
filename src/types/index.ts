@@ -20,6 +20,12 @@ export interface Player {
   updatedAt: Date;
 }
 
+export interface PlayerGameStatus {
+  playerId: string;
+  checkedIn: boolean;
+  hasPaid: boolean;
+}
+
 export interface Game {
   id: string;
   date: Date;
@@ -27,6 +33,7 @@ export interface Game {
   teeTime: string;
   notes?: string;
   players: string[]; // Array of player IDs
+  playerStatus: PlayerGameStatus[]; // Track check-in and payment status
   isVerified: boolean;
   isComplete: boolean;
   createdAt: Date;
