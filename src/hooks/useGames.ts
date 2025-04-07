@@ -97,21 +97,18 @@ export function useGames() {
       console.log('Deleting game:', gameId);
       
       // Delete with API
-      const success = await gameService.deleteGame(gameId);
+      await gameService.deleteGame(gameId);
       
-      if (success) {
-        // Update local state
-        deleteGameFromState(gameId);
-        
-        // Show success notification
-        toast({
-          title: "Game Deleted",
-          description: "Game has been removed successfully"
-        });
-        
-        return true;
-      }
-      return false;
+      // Update local state
+      deleteGameFromState(gameId);
+      
+      // Show success notification
+      toast({
+        title: "Game Deleted",
+        description: "Game has been removed successfully"
+      });
+      
+      return true;
     } catch (error) {
       console.error('Error deleting game:', error);
       

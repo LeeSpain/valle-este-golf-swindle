@@ -37,3 +37,36 @@ export async function deleteGame(gameId: string): Promise<void> {
     headers: getAuthHeaders()
   });
 }
+
+// Add player management functions that were referenced in useGames.ts
+export async function addPlayerToGame(gameId: string, playerId: string): Promise<boolean> {
+  await apiClient<void>(`/games/${gameId}/players/${playerId}`, {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+  return true;
+}
+
+export async function removePlayerFromGame(gameId: string, playerId: string): Promise<boolean> {
+  await apiClient<void>(`/games/${gameId}/players/${playerId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+  return true;
+}
+
+export async function getGame(gameId: string): Promise<Game> {
+  return getGameById(gameId);
+}
+
+// Create a unified gameService object that matches what's being imported
+export const gameService = {
+  getGames,
+  getGameById,
+  getGame,
+  createGame,
+  updateGame,
+  deleteGame,
+  addPlayerToGame,
+  removePlayerFromGame
+};
